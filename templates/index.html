@@ -222,16 +222,41 @@
       padding: 1.25rem; white-space: pre-wrap; line-height: 1.8; font-size: 0.93rem;
       min-height: 80px; max-height: 60vh; overflow-y: auto; word-break: break-word;
     }
+    .result-answer-box.rendered {
+      background: transparent; border: none; padding: 0;
+      max-height: none; overflow-y: visible; white-space: normal;
+    }
     .result-answer-box::-webkit-scrollbar { width: 6px; }
     .result-answer-box::-webkit-scrollbar-track { background: transparent; }
     .result-answer-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
     /* ── Question blocks ── */
-    .q-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+    .q-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 12px 12px 0;
+      padding: 0;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
     .q-block:last-child { margin-bottom: 0; }
 
-    .qb-header { color: var(--accent2); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.6rem; }
-    .qb-content { font-size: 0.93rem; word-break: break-word; }
+    .qb-header {
+      background: rgba(91,82,224,0.06);
+      padding: 0.85rem 1.5rem;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.97rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .qb-content {
+      padding: 1.25rem 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.9;
+      word-break: break-word;
+    }
 
     /* Markdown in qb-content */
     .qb-content p { margin: 0.35rem 0; line-height: 1.8; }
@@ -252,7 +277,8 @@
 
     /* ── Status buttons (self-assessment) ── */
     .qb-status-row {
-      display: flex; gap: 0.45rem; margin-top: 0.85rem;
+      display: flex; gap: 0.45rem;
+      margin: 0 1.5rem 1.25rem;
       padding-top: 0.85rem; border-top: 1px solid var(--border); flex-wrap: wrap;
     }
 
@@ -268,7 +294,10 @@
     .status-btn.active[data-status="review"]     { background: #fee2e2; border-color: #dc2626; color: #b91c1c; font-weight: 600; }
 
     /* ── Follow-up ── */
-    .qb-followup-wrap { margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--border); }
+    .qb-followup-wrap {
+      margin: 0 1.5rem 1.25rem;
+      padding-top: 0.85rem; border-top: 1px solid var(--border);
+    }
 
     .followup-toggle-btn {
       background: none; border: 1px solid var(--border); border-radius: 6px;
@@ -947,6 +976,7 @@
   function renderBlocks(answerBox, fullText, sourceName) {
     const segments = fullText.split(/(【[^】]+】)/);
     answerBox.innerHTML = '';
+    answerBox.classList.add('rendered');
 
     if (segments[0].trim()) {
       const pre = document.createElement('div'); pre.className = 'q-block';
