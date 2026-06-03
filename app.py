@@ -147,9 +147,15 @@ async def stream_answers(pdf_text: str = "", images: list[str] | None = None, ap
         yield f"data: {json.dumps({'error': 'API Key 無效，請在 ⚙ 設定中確認'})}\n\n"
     except anthropic.RateLimitError:
         yield f"data: {json.dumps({'error': '已超過 API 使用限制，請稍後再試'})}\n\n"
+    except anthropic.APIConnectionError as e:
+        logger.error("stream_answers connection error: %s", e, exc_info=True)
+        yield f"data: {json.dumps({'error': f'連線至 AI 服務失敗：{type(e).__name__}'})}\n\n"
+    except anthropic.APIStatusError as e:
+        logger.error("stream_answers API status %s: %s", e.status_code, e.message, exc_info=True)
+        yield f"data: {json.dumps({'error': f'AI 服務錯誤（HTTP {e.status_code}）：{e.message[:120]}'})}\n\n"
     except Exception as e:
         logger.error("stream_answers error: %s", e, exc_info=True)
-        yield f"data: {json.dumps({'error': '處理時發生內部錯誤，請稍後再試'})}\n\n"
+        yield f"data: {json.dumps({'error': f'內部錯誤：{type(e).__name__}: {str(e)[:120]}'})}\n\n"
 
 
 async def stream_chat(context: str, follow_up: str, api_key: str = ""):
@@ -181,9 +187,15 @@ async def stream_chat(context: str, follow_up: str, api_key: str = ""):
         yield f"data: {json.dumps({'error': 'API Key 無效，請在 ⚙ 設定中確認'})}\n\n"
     except anthropic.RateLimitError:
         yield f"data: {json.dumps({'error': '已超過 API 使用限制，請稍後再試'})}\n\n"
+    except anthropic.APIConnectionError as e:
+        logger.error("stream_chat connection error: %s", e, exc_info=True)
+        yield f"data: {json.dumps({'error': f'連線至 AI 服務失敗：{type(e).__name__}'})}\n\n"
+    except anthropic.APIStatusError as e:
+        logger.error("stream_chat API status %s: %s", e.status_code, e.message, exc_info=True)
+        yield f"data: {json.dumps({'error': f'AI 服務錯誤（HTTP {e.status_code}）：{e.message[:120]}'})}\n\n"
     except Exception as e:
         logger.error("stream_chat error: %s", e, exc_info=True)
-        yield f"data: {json.dumps({'error': '處理時發生內部錯誤，請稍後再試'})}\n\n"
+        yield f"data: {json.dumps({'error': f'內部錯誤：{type(e).__name__}: {str(e)[:120]}'})}\n\n"
 
 
 # ── Routes ───────────────────────────────────────────────────────
