@@ -438,6 +438,7 @@
 
   let selectedFile = null;
   let extractedText = '';
+  let extractedImages = [];
   let abortController = null;
 
   function formatBytes(bytes) {
@@ -479,6 +480,7 @@
     solveBtn.disabled = false;
     solveBtn.textContent = '上傳並解題';
     extractedText = '';
+    extractedImages = [];
     answerSection.style.display = 'none';
     copyBtn.style.display = 'none';
   }
@@ -503,9 +505,9 @@
     if (!selectedFile) return;
     clearError();
 
-    // If we already have extracted text, go straight to solving
-    if (extractedText) {
-      startSolving(extractedText);
+    // Already have extracted data — skip upload
+    if (extractedText || extractedImages.length > 0) {
+      startSolving(extractedText, extractedImages);
       return;
     }
 
@@ -513,7 +515,7 @@
     solveBtn.textContent = '正在解析 PDF...';
     progressWrap.style.display = 'block';
     progressBar.style.width = '30%';
-    setStatus('上傳並提取 PDF 文字中...');
+    setStatus('上傳並提取 PDF 內容中...');
 
     const formData = new FormData();
     formData.append('file', selectedFile);
@@ -522,13 +524,20 @@
       const res = await fetch('/upload', { method: 'POST', body: formData });
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.detail || '上傳失敗');
-      }
+      if (!res.ok) throw new Error(data.detail || '上傳失敗');
 
       progressBar.style.width = '60%';
-      extractedText = data.text;
-      startSolving(extractedText);
+
+      if (data.mode === 'ocr') {
+        extractedImages = data.images;
+        extractedText = '';
+        setStatus(`偵測到掃描 PDF（${data.pages} 頁），切換 AI 視覺辨識模式...`);
+      } else {
+        extractedText = data.text;
+        extractedImages = [];
+      }
+
+      startSolving(extractedText, extractedImages);
 
     } catch (err) {
       showError(err.message || '發生未知錯誤');
@@ -539,14 +548,17 @@
     }
   });
 
-  async function startSolving(text) {
+  async function startSolving(text, images = []) {
     if (abortController) { abortController.abort(); abortController = null; }
     abortController = new AbortController();
 
+    const isOcr = images.length > 0;
     solveBtn.disabled = true;
     solveBtn.textContent = '解題中...';
     progressBar.style.width = '80%';
-    setStatus('AI 正在分析題目並生成解答...');
+    setStatus(isOcr
+      ? `AI 正在辨識手寫內容並解題，共 ${images.length} 頁（可能需要較長時間）...`
+      : 'AI 正在分析題目並生成解答...');
 
     answerSection.style.display = 'block';
     answerBox.textContent = '';
@@ -557,7 +569,7 @@
       const res = await fetch('/solve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, images }),
         signal: abortController.signal,
       });
 

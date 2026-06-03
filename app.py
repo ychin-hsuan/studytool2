@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 import asyncio
 from pathlib import Path
 
@@ -14,6 +15,15 @@ load_dotenv()
 
 app = FastAPI(title="PDF Quiz Solver")
 
+SYSTEM_PROMPT = """你是一位專業的解題老師。
+使用者會提供一份包含多道題目的考卷（可能是文字或手寫圖片）。請：
+1. 找出所有題目（包括選擇題、填充題、問答題、計算題等）
+2. 依序為每道題目提供詳細的正確解答與解題說明
+3. 格式使用：【第X題】題目內容 → 解答：...（附解析）
+4. 若題目有選項，請明確指出正確選項並說明原因
+5. 使用繁體中文回答
+6. 解析要清楚易懂，適合學生理解"""
+
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> tuple[str, int]:
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
@@ -23,7 +33,19 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> tuple[str, int]:
     return "\n\n".join(pages), page_count
 
 
-async def stream_answers(pdf_text: str):
+def pdf_to_images(pdf_bytes: bytes) -> list[str]:
+    """Render each PDF page at 2× scale → PNG → base64."""
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    images = []
+    mat = fitz.Matrix(2, 2)  # 144 DPI — good for handwriting
+    for page in doc:
+        pix = page.get_pixmap(matrix=mat)
+        images.append(base64.b64encode(pix.tobytes()).decode())
+    doc.close()
+    return images
+
+
+async def stream_answers(pdf_text: str = "", images: list[str] | None = None):
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     if not api_key:
         yield f"data: {json.dumps({'error': '請設定 ANTHROPIC_API_KEY 環境變數'})}\n\n"
@@ -31,25 +53,27 @@ async def stream_answers(pdf_text: str):
 
     client = anthropic.Anthropic(api_key=api_key)
 
-    system_prompt = """你是一位專業的解題老師。
-使用者會提供一份包含多道題目的考卷內容。請：
-1. 找出所有題目（包括選擇題、填充題、問答題、計算題等）
-2. 依序為每道題目提供詳細的正確解答與解題說明
-3. 格式使用：【第X題】題目內容 → 解答：...（附解析）
-4. 若題目有選項，請明確指出正確選項並說明原因
-5. 使用繁體中文回答
-6. 解析要清楚易懂，適合學生理解"""
-
-    user_message = f"""以下是 PDF 考卷的內容，請幫我解答所有題目：
-
-{pdf_text}"""
+    if images:
+        content: list = [
+            {
+                "type": "image",
+                "source": {"type": "base64", "media_type": "image/png", "data": img},
+            }
+            for img in images
+        ]
+        content.append({
+            "type": "text",
+            "text": "以上是考卷圖片（可能含有手寫內容、圖表或數學式），請找出所有題目並依序提供正確解答。",
+        })
+    else:
+        content = f"以下是 PDF 考卷的內容，請幫我解答所有題目：\n\n{pdf_text}"
 
     try:
         with client.messages.stream(
             model="claude-sonnet-4-6",
             max_tokens=8192,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_message}],
+            system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": content}],
         ) as stream:
             for text in stream.text_stream:
                 payload = json.dumps({"text": text}, ensure_ascii=False)
@@ -78,7 +102,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="只接受 PDF 檔案")
 
     content = await file.read()
-    if len(content) > 20 * 1024 * 1024:  # 20 MB limit
+    if len(content) > 20 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="檔案大小不能超過 20MB")
 
     try:
@@ -86,19 +110,26 @@ async def upload_pdf(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"無法解析 PDF：{str(e)}")
 
-    if not text.strip():
-        raise HTTPException(status_code=422, detail="PDF 內容為空或無法提取文字（可能是掃描圖片 PDF）")
+    # Scanned / image-based PDF: fall back to vision OCR
+    # Threshold: fewer than 30 chars per page on average → likely a scan
+    if len(text.strip()) / max(page_count, 1) < 30:
+        try:
+            images = pdf_to_images(content)
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"無法轉換 PDF 頁面為圖片：{str(e)}")
+        return {"images": images, "pages": page_count, "mode": "ocr"}
 
-    return {"text": text, "pages": page_count}
+    return {"text": text, "pages": page_count, "mode": "text"}
 
 
 class SolveRequest(BaseModel):
-    text: str
+    text: str = ""
+    images: list[str] = []
 
 
 class ChatRequest(BaseModel):
-    context: str   # the question block (header + answer) shown to the student
-    follow_up: str # student's question
+    context: str
+    follow_up: str
 
 
 async def stream_chat(context: str, follow_up: str):
@@ -150,13 +181,10 @@ async def chat(req: ChatRequest):
 
 @app.post("/solve")
 async def solve(req: SolveRequest):
-    if not req.text.strip():
+    if not req.text.strip() and not req.images:
         raise HTTPException(status_code=400, detail="題目內容不可為空")
     return StreamingResponse(
-        stream_answers(req.text),
+        stream_answers(req.text, req.images or None),
         media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",
-        },
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
