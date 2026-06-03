@@ -17,6 +17,7 @@
       --text: #1e2030;
       --muted: #5a6380;
       --success: #16a34a;
+      --warn: #ca8a04;
       --error: #dc2626;
     }
 
@@ -28,430 +29,33 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem 1rem;
+      padding: 0 1rem 3rem;
     }
 
+    /* ── Header ── */
     header {
       text-align: center;
-      margin-bottom: 2.5rem;
+      padding: 1.75rem 0 0;
       position: relative;
       width: 100%;
       max-width: 800px;
     }
 
     header h1 {
-      font-size: 2rem;
-      font-weight: 700;
+      font-size: 1.9rem;
+      font-weight: 800;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      letter-spacing: -0.5px;
     }
 
-    header p {
-      color: var(--muted);
-      margin-top: 0.5rem;
-      font-size: 0.95rem;
-    }
+    header p { color: var(--muted); margin-top: 0.3rem; font-size: 0.88rem; }
 
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      width: 100%;
-      max-width: 800px;
-      margin-bottom: 1.5rem;
-    }
-
-    /* Drop zone */
-    #drop-zone {
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      padding: 3rem 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      position: relative;
-    }
-
-    #drop-zone:hover, #drop-zone.drag-over {
-      border-color: var(--accent);
-      background: rgba(108, 99, 255, 0.06);
-    }
-
-    #drop-zone svg {
-      width: 48px;
-      height: 48px;
-      color: var(--accent);
-      margin-bottom: 1rem;
-    }
-
-    #drop-zone p { color: var(--muted); font-size: 0.9rem; margin-top: 0.4rem; }
-    #drop-zone strong { color: var(--text); font-size: 1rem; }
-
-    #file-input { display: none; }
-
-    /* File queue */
-    #file-queue {
-      display: none;
-      margin-top: 1rem;
-    }
-
-    .fq-item {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.65rem 1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .fq-item svg { color: var(--accent2); flex-shrink: 0; }
-
-    .fq-name {
-      flex: 1;
-      font-size: 0.88rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .fq-size {
-      font-size: 0.78rem;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
-
-    .fq-status {
-      font-size: 0.78rem;
-      flex-shrink: 0;
-      min-width: 72px;
-      text-align: right;
-      color: var(--muted);
-    }
-    .fq-status.processing { color: var(--accent2); }
-    .fq-status.done       { color: var(--success); }
-    .fq-status.error      { color: var(--error); }
-
-    .fq-remove {
-      background: none;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 0.85rem;
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-      transition: color 0.2s;
-      flex-shrink: 0;
-      line-height: 1;
-    }
-    .fq-remove:hover:not(:disabled) { color: var(--error); }
-    .fq-remove:disabled { opacity: 0.3; cursor: not-allowed; }
-
-    /* Button */
-    #solve-btn {
-      display: block;
-      width: 100%;
-      margin-top: 1.5rem;
-      padding: 0.85rem;
-      border: none;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent), #8b5cf6);
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-
-    #solve-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
-    #solve-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    /* Progress */
-    #progress-bar-wrap {
-      display: none;
-      margin-top: 1rem;
-      height: 4px;
-      background: var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    #progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      border-radius: 4px;
-      transition: width 0.3s;
-      animation: pulse-bar 1.5s ease-in-out infinite alternate;
-    }
-
-    @keyframes pulse-bar {
-      from { opacity: 1; }
-      to { opacity: 0.6; }
-    }
-
-    /* Status */
-    #status {
-      display: none;
-      font-size: 0.85rem;
-      margin-top: 0.75rem;
-      color: var(--muted);
-      text-align: center;
-    }
-
-    /* Error */
-    .error-msg {
-      color: var(--error);
-      background: rgba(248, 113, 113, 0.1);
-      border: 1px solid rgba(248, 113, 113, 0.3);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      font-size: 0.875rem;
-      margin-top: 0.75rem;
-      display: none;
-    }
-
-    /* Results container */
-    #results-container {
-      width: 100%;
-      max-width: 800px;
-    }
-
-    /* Per-file result card */
-    .result-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      margin-bottom: 1.5rem;
-      overflow: hidden;
-    }
-
-    .result-card-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.15s;
-    }
-    .result-card-header:hover { background: rgba(108, 99, 255, 0.05); }
-
-    .result-live-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      animation: blink 1s step-start infinite;
-      flex-shrink: 0;
-    }
-    .result-live-dot.done { animation: none; background: var(--accent2); }
-
-    .result-title {
-      flex: 1;
-      font-size: 0.95rem;
-      font-weight: 600;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .result-collapse-btn {
-      background: none;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 0.85rem;
-      padding: 0;
-      transition: transform 0.2s;
-      flex-shrink: 0;
-    }
-    .result-collapse-btn.collapsed { transform: rotate(-90deg); }
-
-    .result-body { padding: 1.25rem; }
-
-    /* Answer box inside result cards */
-    .result-answer-box {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem;
-      white-space: pre-wrap;
-      line-height: 1.8;
-      font-size: 0.93rem;
-      min-height: 80px;
-      max-height: 60vh;
-      overflow-y: auto;
-      word-break: break-word;
-    }
-
-    .result-answer-box::-webkit-scrollbar { width: 6px; }
-    .result-answer-box::-webkit-scrollbar-track { background: transparent; }
-    .result-answer-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-    /* Question blocks */
-    .q-block {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .q-block:last-child { margin-bottom: 0; }
-
-    .qb-header {
-      color: var(--accent2);
-      font-weight: 700;
-      font-size: 0.95rem;
-      margin-bottom: 0.6rem;
-    }
-
-    .qb-content {
-      white-space: pre-wrap;
-      line-height: 1.8;
-      font-size: 0.93rem;
-      word-break: break-word;
-    }
-
-    .qb-followup-wrap {
-      margin-top: 1rem;
-      padding-top: 0.75rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .followup-toggle-btn {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--muted);
-      font-size: 0.82rem;
-      padding: 0.35rem 0.75rem;
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .followup-toggle-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-    .followup-toggle-btn.open { border-color: var(--accent2); color: var(--accent2); }
-
-    .followup-panel { margin-top: 0.75rem; }
-
-    .followup-quick {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .followup-quick button {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--muted);
-      font-size: 0.8rem;
-      padding: 0.3rem 0.65rem;
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .followup-quick button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-    .followup-quick button:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .followup-input-row {
-      display: flex;
-      gap: 0.5rem;
-      align-items: flex-end;
-    }
-
-    .followup-input {
-      flex: 1;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 0.88rem;
-      padding: 0.55rem 0.85rem;
-      resize: none;
-      font-family: inherit;
-      transition: border-color 0.2s;
-    }
-    .followup-input:focus { outline: none; border-color: var(--accent2); }
-
-    .followup-send-btn {
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 0.85rem;
-      padding: 0.55rem 1rem;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      white-space: nowrap;
-    }
-    .followup-send-btn:hover:not(:disabled) { opacity: 0.85; }
-    .followup-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .followup-history {
-      margin-top: 0.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.65rem;
-    }
-
-    .followup-exchange {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      font-size: 0.88rem;
-      line-height: 1.7;
-    }
-
-    .followup-exchange .fq {
-      color: var(--accent2);
-      font-weight: 600;
-      font-size: 0.78rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .followup-exchange .fa {
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .followup-exchange .fa.streaming::after {
-      content: '▌';
-      animation: blink 0.8s step-start infinite;
-    }
-
-    /* Action row (per card) */
-    .action-row {
-      display: none;
-      gap: 0.5rem;
-      margin-top: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .action-row button {
-      padding: 0.55rem 1rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--surface2);
-      color: var(--text);
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-    }
-    .action-row button:hover { background: var(--border); }
-    .action-row button.copied { color: var(--success); border-color: var(--success); }
-
-    @keyframes blink { 50% { opacity: 0; } }
-
-    /* Settings button in header */
     #settings-btn {
       position: absolute;
-      top: 0; right: 0;
+      top: 1.75rem; right: 0;
       display: flex;
       align-items: center;
       gap: 0.4rem;
@@ -466,121 +70,175 @@
     }
     #settings-btn:hover { border-color: var(--accent2); color: var(--accent2); }
 
-    .key-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--error);
-      flex-shrink: 0;
-    }
+    .key-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--error); flex-shrink: 0; }
     .key-dot.set { background: var(--success); }
 
-    /* Settings modal overlay */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
+    /* ── Tab nav ── */
+    .tab-nav {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
+      gap: 0;
+      margin: 1.5rem 0 0;
+      border-bottom: 2px solid var(--border);
+      width: 100%;
+      max-width: 800px;
     }
 
-    .settings-modal {
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      padding: 0.65rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+    /* ── Views ── */
+    #solve-view, #practice-view {
+      width: 100%;
+      max-width: 800px;
+      padding-top: 1.5rem;
+    }
+
+    /* ── Card ── */
+    .card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 1.75rem;
-      width: min(420px, 90vw);
+      padding: 2rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
     }
 
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.25rem;
-    }
-    .modal-header h3 { font-size: 1rem; font-weight: 600; }
-    .modal-close-btn {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 1.1rem;
+    /* ── Drop zone ── */
+    #drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 2.5rem 2rem;
+      text-align: center;
       cursor: pointer;
-      line-height: 1;
+      transition: border-color 0.2s, background 0.2s;
     }
-    .modal-close-btn:hover { color: var(--text); }
-
-    .modal-label {
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin-bottom: 0.4rem;
+    #drop-zone:hover, #drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(91, 82, 224, 0.04);
     }
+    #drop-zone svg { width: 44px; height: 44px; color: var(--accent); margin-bottom: 0.85rem; }
+    #drop-zone p { color: var(--muted); font-size: 0.88rem; margin-top: 0.35rem; }
+    #drop-zone strong { color: var(--text); font-size: 0.95rem; }
+    #file-input { display: none; }
 
-    .key-input-row {
+    /* ── File queue ── */
+    #file-queue { display: none; margin-top: 1rem; }
+
+    .fq-item {
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .key-input {
-      flex: 1;
+      align-items: center;
+      gap: 0.6rem;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 8px;
-      color: var(--text);
-      font-size: 0.88rem;
-      padding: 0.55rem 0.85rem;
-      font-family: monospace;
-      transition: border-color 0.2s;
+      padding: 0.65rem 1rem;
+      margin-bottom: 0.5rem;
     }
-    .key-input:focus { outline: none; border-color: var(--accent2); }
-
-    .modal-btn-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-
-    .btn-save {
-      flex: 1;
-      padding: 0.55rem;
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 0.88rem;
-      cursor: pointer;
-      transition: opacity 0.2s;
+    .fq-item svg { color: var(--accent2); flex-shrink: 0; }
+    .fq-name { flex: 1; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fq-size { font-size: 0.78rem; color: var(--muted); flex-shrink: 0; }
+    .fq-status { font-size: 0.78rem; flex-shrink: 0; min-width: 72px; text-align: right; color: var(--muted); }
+    .fq-status.processing { color: var(--accent2); }
+    .fq-status.done  { color: var(--success); }
+    .fq-status.error { color: var(--error); }
+    .fq-remove {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 0.85rem; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.2s; flex-shrink: 0;
     }
-    .btn-save:hover { opacity: 0.85; }
+    .fq-remove:hover:not(:disabled) { color: var(--error); }
+    .fq-remove:disabled { opacity: 0.3; cursor: not-allowed; }
 
-    .btn-clear {
-      padding: 0.55rem 0.9rem;
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-      font-size: 0.88rem;
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
+    /* ── Solve button ── */
+    #solve-btn {
+      display: block; width: 100%; margin-top: 1.5rem; padding: 0.85rem;
+      border: none; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
     }
-    .btn-clear:hover { border-color: var(--error); color: var(--error); }
+    #solve-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+    #solve-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    .modal-note {
-      font-size: 0.78rem;
-      color: var(--muted);
-      line-height: 1.6;
+    /* ── Progress ── */
+    #progress-bar-wrap { display: none; margin-top: 1rem; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    #progress-bar {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px; transition: width 0.3s;
+      animation: pulse-bar 1.5s ease-in-out infinite alternate;
     }
+    @keyframes pulse-bar { from { opacity: 1; } to { opacity: 0.6; } }
+    #status { display: none; font-size: 0.85rem; margin-top: 0.75rem; color: var(--muted); text-align: center; }
 
-    footer {
-      margin-top: 3rem;
-      color: var(--muted);
-      font-size: 0.78rem;
-      text-align: center;
+    /* ── Error ── */
+    .error-msg {
+      color: var(--error); background: rgba(220,38,38,0.07);
+      border: 1px solid rgba(220,38,38,0.25); border-radius: 8px;
+      padding: 0.75rem 1rem; font-size: 0.875rem; margin-top: 0.75rem; display: none;
     }
 
-    /* ── Markdown content styles ── */
+    /* ── Result card ── */
+    #results-container { width: 100%; max-width: 800px; }
+
+    .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 1.5rem; overflow: hidden; }
+
+    .result-card-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+      cursor: pointer; user-select: none; transition: background 0.15s;
+    }
+    .result-card-header:hover { background: rgba(91,82,224,0.04); }
+
+    .result-live-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+      animation: blink 1s step-start infinite; flex-shrink: 0;
+    }
+    .result-live-dot.done { animation: none; background: var(--accent2); }
+
+    .result-title { flex: 1; font-size: 0.95rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .result-collapse-btn {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 0.85rem; padding: 0; transition: transform 0.2s; flex-shrink: 0;
+    }
+    .result-collapse-btn.collapsed { transform: rotate(-90deg); }
+
+    .result-body { padding: 1.25rem; }
+
+    .result-answer-box {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.25rem; white-space: pre-wrap; line-height: 1.8; font-size: 0.93rem;
+      min-height: 80px; max-height: 60vh; overflow-y: auto; word-break: break-word;
+    }
+    .result-answer-box::-webkit-scrollbar { width: 6px; }
+    .result-answer-box::-webkit-scrollbar-track { background: transparent; }
+    .result-answer-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── Question blocks ── */
+    .q-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+    .q-block:last-child { margin-bottom: 0; }
+
+    .qb-header { color: var(--accent2); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.6rem; }
+    .qb-content { font-size: 0.93rem; word-break: break-word; }
+
+    /* Markdown in qb-content */
     .qb-content p { margin: 0.35rem 0; line-height: 1.8; }
     .qb-content p:first-child { margin-top: 0; }
     .qb-content p:last-child { margin-bottom: 0; }
-    .qb-content br { display: block; content: ''; margin: 0.2rem 0; }
-    .qb-content strong { font-weight: 700; color: var(--text); }
+    .qb-content br { display: block; content: ''; margin: 0.15rem 0; }
+    .qb-content strong { font-weight: 700; }
     .qb-content em { font-style: italic; }
     .qb-content h3 { font-size: 1rem; font-weight: 700; color: var(--accent2); margin: 0.8rem 0 0.3rem; }
     .qb-content h4 { font-size: 0.95rem; font-weight: 600; color: var(--accent2); margin: 0.6rem 0 0.25rem; }
@@ -588,36 +246,187 @@
     .qb-content ul, .qb-content ol { margin: 0.4rem 0 0.4rem 1.4rem; }
     .qb-content li { margin-bottom: 0.25rem; line-height: 1.75; }
     .qb-content code {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 0.1em 0.35em;
-      font-family: 'Consolas', 'Fira Code', monospace;
-      font-size: 0.88em;
-      color: var(--accent2);
+      background: var(--surface); border: 1px solid var(--border); border-radius: 3px;
+      padding: 0.1em 0.35em; font-family: 'Consolas', monospace; font-size: 0.88em; color: var(--accent2);
     }
 
-    /* ── Print styles ── */
+    /* ── Status buttons (self-assessment) ── */
+    .qb-status-row {
+      display: flex; gap: 0.45rem; margin-top: 0.85rem;
+      padding-top: 0.85rem; border-top: 1px solid var(--border); flex-wrap: wrap;
+    }
+
+    .status-btn {
+      border: 1px solid var(--border); border-radius: 6px;
+      background: var(--surface); color: var(--muted);
+      font-size: 0.8rem; padding: 0.3rem 0.7rem; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .status-btn:hover { border-color: var(--accent); color: var(--text); }
+    .status-btn.active[data-status="understood"] { background: #dcfce7; border-color: #16a34a; color: #15803d; font-weight: 600; }
+    .status-btn.active[data-status="unsure"]     { background: #fef9c3; border-color: #ca8a04; color: #92400e; font-weight: 600; }
+    .status-btn.active[data-status="review"]     { background: #fee2e2; border-color: #dc2626; color: #b91c1c; font-weight: 600; }
+
+    /* ── Follow-up ── */
+    .qb-followup-wrap { margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--border); }
+
+    .followup-toggle-btn {
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      color: var(--muted); font-size: 0.82rem; padding: 0.35rem 0.75rem; cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    }
+    .followup-toggle-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+    .followup-toggle-btn.open { border-color: var(--accent2); color: var(--accent2); }
+
+    .followup-panel { margin-top: 0.75rem; }
+    .followup-quick { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .followup-quick button {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      color: var(--muted); font-size: 0.8rem; padding: 0.3rem 0.65rem; cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    }
+    .followup-quick button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .followup-quick button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .followup-input-row { display: flex; gap: 0.5rem; align-items: flex-end; }
+    .followup-input {
+      flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-size: 0.88rem; padding: 0.55rem 0.85rem; resize: none; font-family: inherit; transition: border-color 0.2s;
+    }
+    .followup-input:focus { outline: none; border-color: var(--accent2); }
+    .followup-send-btn {
+      background: var(--accent); border: none; border-radius: 8px; color: #fff;
+      font-size: 0.85rem; padding: 0.55rem 1rem; cursor: pointer; transition: opacity 0.2s; white-space: nowrap;
+    }
+    .followup-send-btn:hover:not(:disabled) { opacity: 0.85; }
+    .followup-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .followup-history { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.65rem; }
+    .followup-exchange {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.75rem 1rem; font-size: 0.88rem; line-height: 1.7;
+    }
+    .followup-exchange .fq { color: var(--accent2); font-weight: 600; font-size: 0.78rem; margin-bottom: 0.3rem; }
+    .followup-exchange .fa { white-space: pre-wrap; word-break: break-word; }
+    .followup-exchange .fa.streaming::after { content: '▌'; animation: blink 0.8s step-start infinite; }
+
+    /* ── Action row ── */
+    .action-row { display: none; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .action-row button {
+      padding: 0.55rem 1rem; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface2); color: var(--text); font-size: 0.85rem; cursor: pointer; transition: background 0.2s;
+    }
+    .action-row button:hover { background: var(--border); }
+    .action-row button.copied { color: var(--success); border-color: var(--success); }
+
+    /* ── Practice view ── */
+    .practice-stats {
+      display: flex; gap: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .stat-box { text-align: center; }
+    .stat-box .stat-num { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .stat-box .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+    .stat-box.review .stat-num  { color: var(--error); }
+    .stat-box.understood .stat-num { color: var(--success); }
+
+    .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .filter-btn {
+      border: 1px solid var(--border); border-radius: 20px;
+      background: var(--surface); color: var(--muted);
+      font-size: 0.85rem; padding: 0.4rem 1rem; cursor: pointer; transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .filter-btn.active { background: var(--text); border-color: var(--text); color: #fff; font-weight: 600; }
+
+    /* Practice cards */
+    .practice-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.25rem 1.5rem; margin-bottom: 0.75rem;
+    }
+
+    .pc-meta { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .pc-source { font-size: 0.75rem; color: var(--muted); }
+    .pc-badge {
+      font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 20px;
+      border: 1px solid var(--border); color: var(--muted);
+    }
+    .pc-badge.understood { background: #dcfce7; border-color: #16a34a; color: #15803d; }
+    .pc-badge.unsure     { background: #fef9c3; border-color: #ca8a04; color: #92400e; }
+    .pc-badge.review     { background: #fee2e2; border-color: #dc2626; color: #b91c1c; }
+
+    .pc-header { font-size: 0.95rem; font-weight: 700; color: var(--accent2); margin-bottom: 0.85rem; }
+
+    .pc-reveal-btn {
+      background: var(--accent); color: #fff; border: none; border-radius: 8px;
+      padding: 0.5rem 1.25rem; cursor: pointer; font-size: 0.88rem; transition: opacity 0.2s;
+    }
+    .pc-reveal-btn:hover { opacity: 0.85; }
+
+    .pc-answer { margin-top: 1rem; margin-bottom: 1rem; font-size: 0.92rem; word-break: break-word; }
+    .pc-answer p { margin: 0.35rem 0; line-height: 1.8; }
+    .pc-answer ul, .pc-answer ol { margin: 0.4rem 0 0.4rem 1.4rem; }
+    .pc-answer li { margin-bottom: 0.25rem; line-height: 1.75; }
+    .pc-answer strong { font-weight: 700; }
+    .pc-answer em { font-style: italic; }
+    .pc-answer h3, .pc-answer h4, .pc-answer h5 { color: var(--accent2); font-weight: 600; margin: 0.6rem 0 0.25rem; }
+    .pc-answer code {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 3px;
+      padding: 0.1em 0.35em; font-family: monospace; font-size: 0.88em; color: var(--accent2);
+    }
+
+    .pc-status-row { display: flex; gap: 0.45rem; flex-wrap: wrap; }
+
+    .pc-delete-btn {
+      margin-left: auto; background: none; border: none; color: var(--muted);
+      font-size: 0.8rem; cursor: pointer; padding: 0.2rem 0.4rem; transition: color 0.15s;
+    }
+    .pc-delete-btn:hover { color: var(--error); }
+
+    .practice-empty {
+      text-align: center; padding: 3rem 1rem; color: var(--muted);
+    }
+    .practice-empty .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .practice-empty p { font-size: 0.9rem; }
+
+    /* ── Settings modal ── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center; z-index: 100;
+    }
+    .settings-modal {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 1.75rem; width: min(420px, 90vw);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+    .modal-header h3 { font-size: 1rem; font-weight: 600; }
+    .modal-close-btn { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; line-height: 1; }
+    .modal-close-btn:hover { color: var(--text); }
+    .modal-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.4rem; }
+    .key-input-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .key-input {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-size: 0.88rem; padding: 0.55rem 0.85rem; font-family: monospace; transition: border-color 0.2s;
+    }
+    .key-input:focus { outline: none; border-color: var(--accent2); }
+    .modal-btn-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .btn-save { flex: 1; padding: 0.55rem; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-size: 0.88rem; cursor: pointer; transition: opacity 0.2s; }
+    .btn-save:hover { opacity: 0.85; }
+    .btn-clear { padding: 0.55rem 0.9rem; background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 0.88rem; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+    .btn-clear:hover { border-color: var(--error); color: var(--error); }
+    .modal-note { font-size: 0.78rem; color: var(--muted); line-height: 1.6; }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    footer { margin-top: 3rem; color: var(--muted); font-size: 0.78rem; text-align: center; }
+
+    /* ── Print ── */
     @media print {
       body { background: #fff; color: #000; padding: 0; }
-      header, .card, footer, .qb-followup-wrap, .action-row,
-      .result-card-header { display: none !important; }
+      header, .tab-nav, .card, footer, .qb-followup-wrap, .qb-status-row,
+      .action-row, .result-card-header { display: none !important; }
       #results-container { width: 100%; max-width: 100%; }
       .result-card { border: none; border-radius: 0; margin-bottom: 2rem; }
       .result-body { padding: 0; }
-      .result-answer-box {
-        max-height: none;
-        overflow: visible;
-        border: none;
-        padding: 0;
-        background: transparent;
-      }
-      .q-block {
-        background: transparent;
-        border: 1px solid #ccc;
-        break-inside: avoid;
-        margin-bottom: 1rem;
-      }
+      .result-answer-box { max-height: none; overflow: visible; border: none; padding: 0; background: transparent; }
+      .q-block { background: transparent; border: 1px solid #ccc; break-inside: avoid; margin-bottom: 1rem; }
       .qb-header { color: #4b0082; }
     }
   </style>
@@ -628,10 +437,15 @@
   <h1>StudyElf ✦</h1>
   <p>上傳含有題目的 PDF，AI 即時為您解答每一道題</p>
   <button id="settings-btn" title="API Key 設定">
-    <span id="key-dot" class="key-dot"></span>
-    ⚙ 設定
+    <span id="key-dot" class="key-dot"></span>⚙ 設定
   </button>
 </header>
+
+<!-- Tab nav -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="solve">解題</button>
+  <button class="tab-btn" data-tab="practice">練習 <span id="practice-count"></span></button>
+</nav>
 
 <!-- Settings modal -->
 <div id="settings-overlay" class="overlay" style="display:none">
@@ -642,44 +456,68 @@
     </div>
     <p class="modal-label">Anthropic API Key</p>
     <div class="key-input-row">
-      <input type="password" id="api-key-input" class="key-input"
-             placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false" />
+      <input type="password" id="api-key-input" class="key-input" placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false" />
     </div>
     <div class="modal-btn-row">
       <button class="btn-save" id="save-key-btn">儲存</button>
       <button class="btn-clear" id="clear-key-btn">清除</button>
     </div>
     <p class="modal-note">
-      金鑰僅存於此瀏覽器的 sessionStorage（關閉分頁即清除），每次請求以 Header 傳送至本地伺服器，不會傳到其他地方。<br>
+      金鑰僅存於此瀏覽器的 sessionStorage（關閉分頁即清除），每次請求以 Header 傳送，不會傳到其他地方。<br>
       若伺服器已設定 <code>ANTHROPIC_API_KEY</code> 環境變數，此欄可留空。
     </p>
   </div>
 </div>
 
-<div class="card">
-  <div id="drop-zone" role="button" tabindex="0" aria-label="點擊或拖曳上傳 PDF">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-        d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-    </svg>
-    <strong>點擊上傳或將 PDF 拖曳至此</strong>
-    <p>支援一次選取多份 PDF，每份最大 20MB</p>
-    <input type="file" id="file-input" accept=".pdf" multiple />
+<!-- ══ SOLVE VIEW ══ -->
+<div id="solve-view">
+  <div class="card">
+    <div id="drop-zone" role="button" tabindex="0" aria-label="點擊或拖曳上傳 PDF">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      </svg>
+      <strong>點擊上傳或將 PDF 拖曳至此</strong>
+      <p>支援一次選取多份 PDF，每份最大 20MB</p>
+      <input type="file" id="file-input" accept=".pdf" multiple />
+    </div>
+
+    <div id="file-queue"></div>
+    <div id="error-msg" class="error-msg"></div>
+    <button id="solve-btn" disabled>上傳並解題</button>
+    <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+    <div id="status"></div>
   </div>
 
-  <div id="file-queue"></div>
-
-  <div id="error-msg" class="error-msg"></div>
-
-  <button id="solve-btn" disabled>上傳並解題</button>
-
-  <div id="progress-bar-wrap">
-    <div id="progress-bar"></div>
-  </div>
-  <div id="status"></div>
+  <div id="results-container"></div>
 </div>
 
-<div id="results-container"></div>
+<!-- ══ PRACTICE VIEW ══ -->
+<div id="practice-view" style="display:none">
+  <div class="practice-stats">
+    <div class="stat-box">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-label">總題數</div>
+    </div>
+    <div class="stat-box review">
+      <div class="stat-num" id="stat-review">0</div>
+      <div class="stat-label">待複習</div>
+    </div>
+    <div class="stat-box understood">
+      <div class="stat-num" id="stat-understood">0</div>
+      <div class="stat-label">已懂</div>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <button class="filter-btn active" data-filter="all">全部</button>
+    <button class="filter-btn" data-filter="review">✗ 待複習</button>
+    <button class="filter-btn" data-filter="understood">✓ 已懂</button>
+    <button class="filter-btn" data-filter="unseen">— 未做</button>
+  </div>
+
+  <div id="practice-list"></div>
+</div>
 
 <footer>StudyElf — Powered by Claude AI &amp; FastAPI</footer>
 
@@ -690,14 +528,11 @@
   function updateKeyDot() {
     const dot = document.getElementById('key-dot');
     dot.className = 'key-dot' + (apiKey ? ' set' : '');
-    document.getElementById('settings-btn').title =
-      apiKey ? 'API Key 已設定 ✓' : 'API Key 未設定';
+    document.getElementById('settings-btn').title = apiKey ? 'API Key 已設定 ✓' : 'API Key 未設定';
   }
   updateKeyDot();
 
-  function apiHeaders() {
-    return { 'Content-Type': 'application/json', 'X-API-Key': apiKey };
-  }
+  function apiHeaders() { return { 'Content-Type': 'application/json', 'X-API-Key': apiKey }; }
 
   const overlay  = document.getElementById('settings-overlay');
   const keyInput = document.getElementById('api-key-input');
@@ -714,110 +549,224 @@
   overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
 
   document.getElementById('save-key-btn').addEventListener('click', () => {
-    const newKey = keyInput.value.trim();
-    if (newKey) {
-      apiKey = newKey;
-      sessionStorage.setItem('anthropic_api_key', apiKey);
-    }
-    updateKeyDot();
-    closeModal();
+    const k = keyInput.value.trim();
+    if (k) { apiKey = k; sessionStorage.setItem('anthropic_api_key', apiKey); }
+    updateKeyDot(); closeModal();
   });
 
   document.getElementById('clear-key-btn').addEventListener('click', () => {
-    apiKey = '';
-    sessionStorage.removeItem('anthropic_api_key');
-    keyInput.value = '';
-    updateKeyDot();
+    apiKey = ''; sessionStorage.removeItem('anthropic_api_key'); keyInput.value = ''; updateKeyDot();
   });
 
-  keyInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('save-key-btn').click();
+  keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('save-key-btn').click(); });
+
+  // ── Tab navigation ─────────────────────────────────────────────
+  const solveView    = document.getElementById('solve-view');
+  const practiceView = document.getElementById('practice-view');
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      solveView.style.display    = tab === 'solve'    ? 'block' : 'none';
+      practiceView.style.display = tab === 'practice' ? 'block' : 'none';
+      if (tab === 'practice') renderPracticeView();
+    });
   });
 
-  // ── App state ──────────────────────────────────────────────────
-  let selectedFiles = [];   // File objects in queue
-  let isBatchRunning = false;
+  // ── LocalStorage — question bank ───────────────────────────────
+  const STORE_KEY = 'studyelf_questions';
 
-  const dropZone       = document.getElementById('drop-zone');
-  const fileInput      = document.getElementById('file-input');
-  const fileQueueEl    = document.getElementById('file-queue');
-  const solveBtn       = document.getElementById('solve-btn');
-  const errorMsg       = document.getElementById('error-msg');
-  const progressWrap   = document.getElementById('progress-bar-wrap');
-  const progressBar    = document.getElementById('progress-bar');
-  const statusEl       = document.getElementById('status');
-  const resultsContainer = document.getElementById('results-container');
-
-  // ── Utilities ──────────────────────────────────────────────────
-
-  function escHtml(str) {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+  function loadBank() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch { return []; }
   }
 
-  function formatBytes(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
+  function saveBank(qs) { localStorage.setItem(STORE_KEY, JSON.stringify(qs)); }
 
-  function showError(msg) {
-    errorMsg.textContent = msg;
-    errorMsg.style.display = 'block';
-  }
-
-  function clearError() {
-    errorMsg.style.display = 'none';
-    errorMsg.textContent = '';
-  }
-
-  function setStatus(msg) {
-    statusEl.style.display = msg ? 'block' : 'none';
-    statusEl.textContent = msg;
-  }
-
-  // ── File queue management ──────────────────────────────────────
-
-  function addFiles(fileList) {
-    let anyError = false;
-    for (const file of fileList) {
-      if (!file.name.toLowerCase().endsWith('.pdf')) {
-        showError(`「${file.name}」不是 PDF 檔案`);
-        anyError = true;
-        continue;
-      }
-      if (file.size > 20 * 1024 * 1024) {
-        showError(`「${file.name}」超過 20MB 限制`);
-        anyError = true;
-        continue;
-      }
-      // Skip exact duplicates already in queue
-      if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) continue;
-      selectedFiles.push(file);
+  function upsertQuestions(newQuestions) {
+    const bank = loadBank();
+    for (const q of newQuestions) {
+      const idx = bank.findIndex(x => x.id === q.id);
+      if (idx >= 0) { bank[idx] = { ...bank[idx], ...q, status: bank[idx].status }; }
+      else bank.unshift(q);
     }
-    if (!anyError) clearError();
-    renderFileQueue();
+    saveBank(bank);
+    updatePracticeCount();
   }
 
-  function removeFile(index) {
-    selectedFiles.splice(index, 1);
-    renderFileQueue();
+  function setQuestionStatus(id, status) {
+    const bank = loadBank();
+    const q = bank.find(x => x.id === id);
+    if (q) { q.status = status; saveBank(bank); }
+    updatePracticeCount();
   }
 
-  function renderFileQueue() {
-    if (selectedFiles.length === 0) {
-      fileQueueEl.style.display = 'none';
-      solveBtn.disabled = true;
-      solveBtn.textContent = '上傳並解題';
+  function deleteQuestion(id) {
+    saveBank(loadBank().filter(x => x.id !== id));
+    updatePracticeCount();
+  }
+
+  function makeId(source, index) {
+    return source.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_q' + index;
+  }
+
+  function updatePracticeCount() {
+    const bank = loadBank();
+    const count = bank.length;
+    document.getElementById('practice-count').textContent = count > 0 ? `(${count})` : '';
+  }
+  updatePracticeCount();
+
+  // ── Practice view ──────────────────────────────────────────────
+  let currentFilter = 'all';
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderPracticeView();
+    });
+  });
+
+  function renderPracticeView() {
+    const bank = loadBank();
+    const total       = bank.length;
+    const reviewCount = bank.filter(q => q.status === 'review' || q.status === 'unsure').length;
+    const understood  = bank.filter(q => q.status === 'understood').length;
+
+    document.getElementById('stat-total').textContent      = total;
+    document.getElementById('stat-review').textContent     = reviewCount;
+    document.getElementById('stat-understood').textContent = understood;
+
+    const filtered = bank.filter(q => {
+      if (currentFilter === 'all')        return true;
+      if (currentFilter === 'review')     return q.status === 'review' || q.status === 'unsure';
+      if (currentFilter === 'understood') return q.status === 'understood';
+      if (currentFilter === 'unseen')     return q.status === 'unseen';
+      return true;
+    });
+
+    const list = document.getElementById('practice-list');
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="practice-empty"><div class="empty-icon">📬</div><p>${total === 0 ? '還沒有題目，先去「解題」上傳 PDF 吧' : '這個分類目前沒有題目'}</p></div>`;
       return;
     }
 
+    list.innerHTML = '';
+    filtered.forEach(q => list.appendChild(buildPracticeCard(q)));
+  }
+
+  function buildPracticeCard(q) {
+    const card = document.createElement('div');
+    card.className = 'practice-card';
+    card.dataset.id = q.id;
+
+    const badgeText  = { unseen: '未做', understood: '✓ 已懂', unsure: '? 不確定', review: '✗ 待複習' };
+    const badgeClass = { unseen: '', understood: 'understood', unsure: 'unsure', review: 'review' };
+
+    card.innerHTML = `
+      <div class="pc-meta">
+        <span class="pc-source">${escHtml(q.source)}</span>
+        <span class="pc-badge ${badgeClass[q.status] || ''}">${badgeText[q.status] || '未做'}</span>
+        <button class="pc-delete-btn" title="移除此題">🗑</button>
+      </div>
+      <div class="pc-header">${escHtml(q.header)}</div>
+      <button class="pc-reveal-btn">查看解答</button>
+      <div class="pc-answer" style="display:none">${renderMarkdown(q.content)}</div>
+      <div class="pc-status-row" style="display:none">
+        <button class="status-btn" data-status="understood">✅ 懂了</button>
+        <button class="status-btn" data-status="unsure">❓ 不確定</button>
+        <button class="status-btn" data-status="review">❌ 不懂</button>
+      </div>`;
+
+    const revealBtn   = card.querySelector('.pc-reveal-btn');
+    const answerDiv   = card.querySelector('.pc-answer');
+    const statusRow   = card.querySelector('.pc-status-row');
+    const badge       = card.querySelector('.pc-badge');
+    const deleteBtn   = card.querySelector('.pc-delete-btn');
+
+    revealBtn.addEventListener('click', () => {
+      answerDiv.style.display  = 'block';
+      statusRow.style.display  = 'flex';
+      revealBtn.style.display  = 'none';
+    });
+
+    card.querySelectorAll('.pc-status-row .status-btn').forEach(btn => {
+      if (q.status === btn.dataset.status) btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        const s = btn.dataset.status;
+        setQuestionStatus(q.id, s);
+        q.status = s;
+        card.querySelectorAll('.pc-status-row .status-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        badge.className = `pc-badge ${badgeClass[s] || ''}`;
+        badge.textContent = badgeText[s] || '';
+        updatePracticeCount();
+      });
+    });
+
+    deleteBtn.addEventListener('click', () => {
+      deleteQuestion(q.id);
+      card.remove();
+      renderPracticeView();
+    });
+
+    return card;
+  }
+
+  // ── App state ──────────────────────────────────────────────────
+  let selectedFiles  = [];
+  let isBatchRunning = false;
+
+  const dropZone      = document.getElementById('drop-zone');
+  const fileInput     = document.getElementById('file-input');
+  const fileQueueEl   = document.getElementById('file-queue');
+  const solveBtn      = document.getElementById('solve-btn');
+  const errorMsg      = document.getElementById('error-msg');
+  const progressWrap  = document.getElementById('progress-bar-wrap');
+  const progressBar   = document.getElementById('progress-bar');
+  const statusEl      = document.getElementById('status');
+  const resultsContainer = document.getElementById('results-container');
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+              .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(1) + ' MB';
+  }
+
+  function showError(msg) { errorMsg.textContent = msg; errorMsg.style.display = 'block'; }
+  function clearError()   { errorMsg.style.display = 'none'; errorMsg.textContent = ''; }
+  function setStatus(msg) { statusEl.style.display = msg ? 'block' : 'none'; statusEl.textContent = msg; }
+
+  // ── File queue ─────────────────────────────────────────────────
+  function addFiles(list) {
+    let anyErr = false;
+    for (const f of list) {
+      if (!f.name.toLowerCase().endsWith('.pdf')) { showError(`「${f.name}」不是 PDF`); anyErr = true; continue; }
+      if (f.size > 20*1024*1024) { showError(`「${f.name}」超過 20MB`); anyErr = true; continue; }
+      if (selectedFiles.some(x => x.name === f.name && x.size === f.size)) continue;
+      selectedFiles.push(f);
+    }
+    if (!anyErr) clearError();
+    renderFileQueue();
+  }
+
+  function removeFile(i) { selectedFiles.splice(i,1); renderFileQueue(); }
+
+  function renderFileQueue() {
+    if (selectedFiles.length === 0) {
+      fileQueueEl.style.display = 'none'; solveBtn.disabled = true; solveBtn.textContent = '上傳並解題'; return;
+    }
     fileQueueEl.style.display = 'block';
-    fileQueueEl.innerHTML = selectedFiles.map((f, i) => `
+    fileQueueEl.innerHTML = selectedFiles.map((f,i) => `
       <div class="fq-item" id="fq-item-${i}">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -827,288 +776,166 @@
         <div class="fq-size">${formatBytes(f.size)}</div>
         <div class="fq-status" id="fq-status-${i}">⏳ 等待中</div>
         <button class="fq-remove" data-index="${i}" title="移除">✕</button>
-      </div>
-    `).join('');
+      </div>`).join('');
 
-    // Wire remove buttons
     fileQueueEl.querySelectorAll('.fq-remove').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (!isBatchRunning) removeFile(parseInt(btn.dataset.index));
-      });
+      btn.addEventListener('click', () => { if (!isBatchRunning) removeFile(parseInt(btn.dataset.index)); });
     });
-
     solveBtn.disabled = false;
-    solveBtn.textContent = selectedFiles.length > 1
-      ? `全部解題（${selectedFiles.length} 份）`
-      : '上傳並解題';
+    solveBtn.textContent = selectedFiles.length > 1 ? `全部解題（${selectedFiles.length} 份）` : '上傳並解題';
   }
 
-  // ── File picker / drag-drop ────────────────────────────────────
-
   dropZone.addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') fileInput.click();
-  });
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files.length) addFiles(fileInput.files);
-    fileInput.value = ''; // reset so same files can be re-added after removal
-  });
-
+  dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+  fileInput.addEventListener('change', () => { if (fileInput.files.length) addFiles(fileInput.files); fileInput.value = ''; });
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
-    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
-  });
+  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
 
-  // ── Batch solve ────────────────────────────────────────────────
-
-  solveBtn.addEventListener('click', () => {
-    if (isBatchRunning || selectedFiles.length === 0) return;
-    startBatch();
-  });
+  // ── Batch processing ───────────────────────────────────────────
+  solveBtn.addEventListener('click', () => { if (!isBatchRunning && selectedFiles.length) startBatch(); });
 
   async function startBatch() {
-    isBatchRunning = true;
-    clearError();
-    solveBtn.disabled = true;
-    resultsContainer.innerHTML = '';
-
-    // Disable queue remove buttons during processing
+    isBatchRunning = true; clearError(); solveBtn.disabled = true; resultsContainer.innerHTML = '';
     fileQueueEl.querySelectorAll('.fq-remove').forEach(b => b.disabled = true);
-
     const total = selectedFiles.length;
 
     for (let i = 0; i < total; i++) {
       const file = selectedFiles[i];
-      const statusBadge = document.getElementById(`fq-status-${i}`);
-      statusBadge.textContent = '🔄 處理中';
-      statusBadge.className = 'fq-status processing';
-
-      setStatus(total > 1
-        ? `正在處理第 ${i + 1} / ${total} 份：${file.name}`
-        : `正在處理：${file.name}`);
-
-      progressWrap.style.display = 'block';
-      progressBar.style.width = '10%';
-
+      const badge = document.getElementById(`fq-status-${i}`);
+      badge.textContent = '🔄 處理中'; badge.className = 'fq-status processing';
+      setStatus(total > 1 ? `正在處理第 ${i+1} / ${total} 份：${file.name}` : `正在處理：${file.name}`);
+      progressWrap.style.display = 'block'; progressBar.style.width = '10%';
       const { card, answerBox, actionRow, liveDot } = createResultCard(file.name);
       resultsContainer.appendChild(card);
       card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
       const ok = await processFile(file, answerBox, actionRow, liveDot);
-
-      statusBadge.textContent = ok ? '✅ 完成' : '❌ 錯誤';
-      statusBadge.className = 'fq-status ' + (ok ? 'done' : 'error');
+      badge.textContent = ok ? '✅ 完成' : '❌ 錯誤';
+      badge.className   = 'fq-status ' + (ok ? 'done' : 'error');
     }
 
     progressBar.style.width = '100%';
     setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 600);
     setStatus('');
-
-    isBatchRunning = false;
-    solveBtn.disabled = false;
+    isBatchRunning = false; solveBtn.disabled = false;
     solveBtn.textContent = total > 1 ? `全部解題（${total} 份）` : '重新解題';
     fileQueueEl.querySelectorAll('.fq-remove').forEach(b => b.disabled = false);
   }
 
-  // ── Process a single file ──────────────────────────────────────
-
+  // ── Process single file ────────────────────────────────────────
   async function processFile(file, answerBox, actionRow, liveDot) {
-    // Step 1: upload
     progressBar.style.width = '30%';
-    const formData = new FormData();
-    formData.append('file', file);
-
-    let uploadData;
+    const fd = new FormData(); fd.append('file', file);
+    let data;
     try {
-      const res = await fetch('/upload', { method: 'POST', body: formData });
-      uploadData = await res.json();
-      if (!res.ok) throw new Error(uploadData.detail || '上傳失敗');
-    } catch (err) {
-      answerBox.textContent = '上傳失敗：' + (err.message || '未知錯誤');
-      liveDot.classList.add('done');
-      return false;
-    }
+      const r = await fetch('/upload', { method: 'POST', body: fd });
+      data = await r.json();
+      if (!r.ok) throw new Error(data.detail || '上傳失敗');
+    } catch (e) { answerBox.textContent = '上傳失敗：' + (e.message || '未知'); liveDot.classList.add('done'); return false; }
 
     progressBar.style.width = '55%';
+    const isOcr  = data.mode === 'ocr';
+    const text   = isOcr ? '' : (data.text || '');
+    const images = isOcr ? (data.images || []) : [];
+    if (isOcr) answerBox.textContent = `偵測到掃描 PDF（${data.pages} 頁），AI 視覺辨識中...\n`;
 
-    const isOcr = uploadData.mode === 'ocr';
-    const text   = isOcr ? '' : (uploadData.text || '');
-    const images = isOcr ? (uploadData.images || []) : [];
-
-    if (isOcr) {
-      answerBox.textContent = `偵測到掃描 PDF（${uploadData.pages} 頁），AI 視覺辨識中...\n`;
-    }
-
-    // Step 2: solve (stream)
     progressBar.style.width = '70%';
-
     let fullText = '';
     try {
-      const res = await fetch('/solve', {
-        method: 'POST',
-        headers: apiHeaders(),
-        body: JSON.stringify({ text, images }),
-      });
+      const r = await fetch('/solve', { method: 'POST', headers: apiHeaders(), body: JSON.stringify({ text, images }) });
+      if (!r.ok) { const e = await r.json(); throw new Error(e.detail || '解題失敗'); }
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || '解題請求失敗');
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buf = '';
-
+      const reader = r.body.getReader(); const dec = new TextDecoder(); let buf = '';
       answerBox.textContent = '';
-
       while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        const lines = buf.split('\n');
-        buf = lines.pop();
-
+        const { done, value } = await reader.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split('\n'); buf = lines.pop();
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
-          let payload;
-          try { payload = JSON.parse(line.slice(6)); } catch { continue; }
-
-          if (payload.error) {
-            answerBox.textContent += '\n錯誤：' + payload.error;
-            liveDot.classList.add('done');
-            return false;
-          }
-          if (payload.done) break;
-          if (payload.text) {
-            fullText += payload.text;
-            answerBox.textContent = fullText;
-            answerBox.scrollTop = answerBox.scrollHeight;
-          }
+          let p; try { p = JSON.parse(line.slice(6)); } catch { continue; }
+          if (p.error) { answerBox.textContent += '\n錯誤：' + p.error; liveDot.classList.add('done'); return false; }
+          if (p.done) break;
+          if (p.text) { fullText += p.text; answerBox.textContent = fullText; answerBox.scrollTop = answerBox.scrollHeight; }
         }
       }
-    } catch (err) {
-      answerBox.textContent = '串流錯誤：' + (err.message || '請重試');
-      liveDot.classList.add('done');
-      return false;
-    }
+    } catch (e) { answerBox.textContent = '串流錯誤：' + (e.message || '請重試'); liveDot.classList.add('done'); return false; }
 
-    progressBar.style.width = '100%';
-    liveDot.classList.add('done');
-
-    if (fullText.trim()) {
-      renderBlocks(answerBox, fullText);
-      actionRow.style.display = 'flex';
-    }
+    progressBar.style.width = '100%'; liveDot.classList.add('done');
+    if (fullText.trim()) { renderBlocks(answerBox, fullText, file.name); actionRow.style.display = 'flex'; }
     return true;
   }
 
   // ── Result card factory ────────────────────────────────────────
-
   function createResultCard(filename) {
-    const card = document.createElement('div');
-    card.className = 'result-card';
-
+    const card = document.createElement('div'); card.className = 'result-card';
     card.innerHTML = `
       <div class="result-card-header">
         <span class="result-live-dot"></span>
         <span class="result-title">${escHtml(filename)}</span>
-        <button class="result-collapse-btn" title="展開 / 收合">▼</button>
+        <button class="result-collapse-btn" title="展開/收合">▼</button>
       </div>
       <div class="result-body">
         <div class="result-answer-box"></div>
         <div class="action-row">
           <button class="copy-btn">複製</button>
           <button class="export-md-btn">⬇ 下載 Markdown</button>
-          <button class="print-btn">🖨 列印 / 存 PDF</button>
+          <button class="print-btn">🖨 列印</button>
         </div>
       </div>`;
 
-    const liveDot    = card.querySelector('.result-live-dot');
-    const header     = card.querySelector('.result-card-header');
-    const collapseBtn = card.querySelector('.result-collapse-btn');
-    const body       = card.querySelector('.result-body');
-    const answerBox  = card.querySelector('.result-answer-box');
-    const actionRow  = card.querySelector('.action-row');
-    const copyBtn    = card.querySelector('.copy-btn');
-    const exportBtn  = card.querySelector('.export-md-btn');
-    const printBtn   = card.querySelector('.print-btn');
+    const liveDot   = card.querySelector('.result-live-dot');
+    const header    = card.querySelector('.result-card-header');
+    const collapseB = card.querySelector('.result-collapse-btn');
+    const body      = card.querySelector('.result-body');
+    const answerBox = card.querySelector('.result-answer-box');
+    const actionRow = card.querySelector('.action-row');
 
-    // Collapse toggle
     header.addEventListener('click', () => {
-      const collapsed = body.style.display === 'none';
-      body.style.display = collapsed ? 'block' : 'none';
-      collapseBtn.classList.toggle('collapsed', !collapsed);
+      const c = body.style.display === 'none'; body.style.display = c ? 'block' : 'none'; collapseB.classList.toggle('collapsed', !c);
     });
 
-    // Export actions
-    copyBtn.addEventListener('click', () => {
+    card.querySelector('.copy-btn').addEventListener('click', function() {
       navigator.clipboard.writeText(answerBox.textContent).then(() => {
-        copyBtn.textContent = '已複製 ✓';
-        copyBtn.classList.add('copied');
-        setTimeout(() => { copyBtn.textContent = '複製'; copyBtn.classList.remove('copied'); }, 2000);
+        this.textContent = '已複製 ✓'; this.classList.add('copied');
+        setTimeout(() => { this.textContent = '複製'; this.classList.remove('copied'); }, 2000);
       });
     });
 
-    exportBtn.addEventListener('click', () => {
+    card.querySelector('.export-md-btn').addEventListener('click', () => {
       const blob = new Blob([answerBox.textContent], { type: 'text/markdown;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename.replace(/\.pdf$/i, '') + '-answers.md';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const url = URL.createObjectURL(blob); const a = document.createElement('a');
+      a.href = url; a.download = filename.replace(/\.pdf$/i,'') + '-answers.md';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     });
 
-    printBtn.addEventListener('click', () => window.print());
+    card.querySelector('.print-btn').addEventListener('click', () => window.print());
 
     return { card, answerBox, actionRow, liveDot };
   }
 
-  // ── Markdown renderer ─────────────────────────────────────────
-
-  function applyInline(text) {
-    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
-    text = text.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
-    text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-    return text;
+  // ── Markdown renderer ──────────────────────────────────────────
+  function applyInline(t) {
+    t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    t = t.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+    t = t.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+    return t;
   }
 
   function renderMarkdown(raw) {
     const lines = escHtml(raw).split('\n');
-    const out = [];
-    let inUl = false, inOl = false;
-
-    function closeList() {
-      if (inUl) { out.push('</ul>'); inUl = false; }
-      if (inOl) { out.push('</ol>'); inOl = false; }
-    }
-
+    const out = []; let inUl = false, inOl = false;
+    function closeList() { if (inUl) { out.push('</ul>'); inUl=false; } if (inOl) { out.push('</ol>'); inOl=false; } }
     for (const line of lines) {
       const olM = line.match(/^(\d+)[.)]\s+(.+)$/);
-      if (olM) {
-        if (!inOl) { closeList(); out.push('<ol>'); inOl = true; }
-        out.push(`<li>${applyInline(olM[2])}</li>`);
-        continue;
-      }
+      if (olM) { if (!inOl) { closeList(); out.push('<ol>'); inOl=true; } out.push(`<li>${applyInline(olM[2])}</li>`); continue; }
       const ulM = line.match(/^[-*•]\s+(.+)$/);
-      if (ulM) {
-        if (!inUl) { closeList(); out.push('<ul>'); inUl = true; }
-        out.push(`<li>${applyInline(ulM[1])}</li>`);
-        continue;
-      }
+      if (ulM) { if (!inUl) { closeList(); out.push('<ul>'); inUl=true; } out.push(`<li>${applyInline(ulM[1])}</li>`); continue; }
       closeList();
-      const h3 = line.match(/^###\s+(.+)$/);
-      if (h3) { out.push(`<h5>${applyInline(h3[1])}</h5>`); continue; }
-      const h2 = line.match(/^##\s+(.+)$/);
-      if (h2) { out.push(`<h4>${applyInline(h2[1])}</h4>`); continue; }
-      const h1 = line.match(/^#\s+(.+)$/);
-      if (h1) { out.push(`<h3>${applyInline(h1[1])}</h3>`); continue; }
+      const h3 = line.match(/^###\s+(.+)$/); if (h3) { out.push(`<h5>${applyInline(h3[1])}</h5>`); continue; }
+      const h2 = line.match(/^##\s+(.+)$/);  if (h2) { out.push(`<h4>${applyInline(h2[1])}</h4>`); continue; }
+      const h1 = line.match(/^#\s+(.+)$/);   if (h1) { out.push(`<h3>${applyInline(h1[1])}</h3>`); continue; }
       if (line.trim() === '') { out.push('<br>'); continue; }
       out.push(`<p>${applyInline(line)}</p>`);
     }
@@ -1116,33 +943,41 @@
     return out.join('');
   }
 
-  // ── Block rendering ────────────────────────────────────────────
-
-  function renderBlocks(answerBox, fullText) {
+  // ── Block rendering + auto-save ────────────────────────────────
+  function renderBlocks(answerBox, fullText, sourceName) {
     const segments = fullText.split(/(【[^】]+】)/);
     answerBox.innerHTML = '';
 
     if (segments[0].trim()) {
-      const pre = document.createElement('div');
-      pre.className = 'q-block';
+      const pre = document.createElement('div'); pre.className = 'q-block';
       pre.innerHTML = `<div class="qb-content">${renderMarkdown(segments[0].trim())}</div>`;
       answerBox.appendChild(pre);
     }
 
+    const toSave = [];
     for (let i = 1; i < segments.length; i += 2) {
       const header  = segments[i];
       const content = (segments[i + 1] || '').trim();
-      answerBox.appendChild(createBlock(header, content));
+      const qIndex  = Math.floor(i / 2);
+      const qId     = sourceName ? makeId(sourceName, qIndex) : null;
+      answerBox.appendChild(createBlock(header, content, qId));
+      if (qId) toSave.push({ id: qId, source: sourceName, header, content, status: 'unseen', savedAt: Date.now() });
     }
+    if (toSave.length) { upsertQuestions(toSave); updatePracticeCount(); }
   }
 
-  function createBlock(header, content) {
-    const div = document.createElement('div');
-    div.className = 'q-block';
+  function createBlock(header, content, qId) {
+    const div = document.createElement('div'); div.className = 'q-block';
 
+    const statusAttrs = qId ? `data-id="${escHtml(qId)}"` : '';
     div.innerHTML = `
       <div class="qb-header">${escHtml(header)}</div>
       <div class="qb-content">${renderMarkdown(content)}</div>
+      <div class="qb-status-row">
+        <button class="status-btn" ${statusAttrs} data-status="understood">✅ 懂了</button>
+        <button class="status-btn" ${statusAttrs} data-status="unsure">❓ 不確定</button>
+        <button class="status-btn" ${statusAttrs} data-status="review">❌ 不懂</button>
+      </div>
       <div class="qb-followup-wrap">
         <button class="followup-toggle-btn">💬 追問這題</button>
         <div class="followup-panel" style="display:none">
@@ -1159,6 +994,18 @@
         </div>
       </div>`;
 
+    // Status buttons
+    div.querySelectorAll('.status-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const s  = btn.dataset.status;
+        const id = btn.dataset.id;
+        if (id) setQuestionStatus(id, s);
+        div.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Follow-up toggle
     const context   = header + '\n' + content;
     const toggleBtn = div.querySelector('.followup-toggle-btn');
     const panel     = div.querySelector('.followup-panel');
@@ -1177,80 +1024,42 @@
       btn.addEventListener('click', () => sendFollowup(context, btn.dataset.q, historyEl, div));
     });
 
-    const doSend = () => {
-      const q = textarea.value.trim();
-      if (q) { textarea.value = ''; sendFollowup(context, q, historyEl, div); }
-    };
+    const doSend = () => { const q = textarea.value.trim(); if (q) { textarea.value = ''; sendFollowup(context, q, historyEl, div); } };
     sendBtn.addEventListener('click', doSend);
-    textarea.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); }
-    });
+    textarea.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
 
     return div;
   }
 
   // ── Follow-up streaming ────────────────────────────────────────
-
   async function sendFollowup(context, question, historyEl, blockDiv) {
-    const btns = blockDiv.querySelectorAll('button');
-    btns.forEach(b => b.disabled = true);
-
-    const exchange = document.createElement('div');
-    exchange.className = 'followup-exchange';
+    blockDiv.querySelectorAll('button').forEach(b => b.disabled = true);
+    const exchange = document.createElement('div'); exchange.className = 'followup-exchange';
     exchange.innerHTML = `<div class="fq">你：${escHtml(question)}</div><div class="fa streaming"></div>`;
     historyEl.appendChild(exchange);
     exchange.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
     const answerEl = exchange.querySelector('.fa');
 
     try {
-      const res = await fetch('/chat', {
-        method: 'POST',
-        headers: apiHeaders(),
-        body: JSON.stringify({ context, follow_up: question }),
-      });
+      const res = await fetch('/chat', { method: 'POST', headers: apiHeaders(), body: JSON.stringify({ context, follow_up: question }) });
+      if (!res.ok) { const e = await res.json(); answerEl.classList.remove('streaming'); answerEl.textContent = '錯誤：' + (e.detail || '未知'); return; }
 
-      if (!res.ok) {
-        const err = await res.json();
-        answerEl.classList.remove('streaming');
-        answerEl.textContent = '錯誤：' + (err.detail || '未知錯誤');
-        return;
-      }
-
-      const reader  = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buf = '';
-
+      const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
       while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        const lines = buf.split('\n');
-        buf = lines.pop();
+        const { done, value } = await reader.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split('\n'); buf = lines.pop();
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
-          let payload;
-          try { payload = JSON.parse(line.slice(6)); } catch { continue; }
-          if (payload.error) {
-            answerEl.classList.remove('streaming');
-            answerEl.textContent = '錯誤：' + payload.error;
-            return;
-          }
-          if (payload.done) { answerEl.classList.remove('streaming'); return; }
-          if (payload.text) {
-            answerEl.textContent += payload.text;
-            exchange.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
+          let p; try { p = JSON.parse(line.slice(6)); } catch { continue; }
+          if (p.error) { answerEl.classList.remove('streaming'); answerEl.textContent = '錯誤：' + p.error; return; }
+          if (p.done) { answerEl.classList.remove('streaming'); return; }
+          if (p.text) { answerEl.textContent += p.text; exchange.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
         }
       }
       answerEl.classList.remove('streaming');
-
-    } catch (err) {
-      answerEl.classList.remove('streaming');
-      answerEl.textContent = '連線錯誤，請重試';
-    } finally {
-      btns.forEach(b => b.disabled = false);
-    }
+    } catch { answerEl.classList.remove('streaming'); answerEl.textContent = '連線錯誤，請重試'; }
+    finally { blockDiv.querySelectorAll('button').forEach(b => b.disabled = false); }
   }
 </script>
 </body>
