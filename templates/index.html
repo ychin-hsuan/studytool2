@@ -92,21 +92,64 @@
 
     #file-input { display: none; }
 
-    /* File info */
-    #file-info {
+    /* File queue */
+    #file-queue {
       display: none;
-      align-items: center;
-      gap: 1rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
       margin-top: 1rem;
     }
 
-    #file-info svg { color: var(--accent2); flex-shrink: 0; }
-    #file-name { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #file-size { font-size: 0.8rem; color: var(--muted); }
+    .fq-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .fq-item svg { color: var(--accent2); flex-shrink: 0; }
+
+    .fq-name {
+      flex: 1;
+      font-size: 0.88rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fq-size {
+      font-size: 0.78rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .fq-status {
+      font-size: 0.78rem;
+      flex-shrink: 0;
+      min-width: 72px;
+      text-align: right;
+      color: var(--muted);
+    }
+    .fq-status.processing { color: var(--accent2); }
+    .fq-status.done       { color: var(--success); }
+    .fq-status.error      { color: var(--error); }
+
+    .fq-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      transition: color 0.2s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .fq-remove:hover:not(:disabled) { color: var(--error); }
+    .fq-remove:disabled { opacity: 0.3; cursor: not-allowed; }
 
     /* Button */
     #solve-btn {
@@ -160,51 +203,97 @@
       text-align: center;
     }
 
-    /* Answer section */
-    #answer-section {
+    /* Error */
+    .error-msg {
+      color: var(--error);
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      margin-top: 0.75rem;
       display: none;
+    }
+
+    /* Results container */
+    #results-container {
       width: 100%;
       max-width: 800px;
     }
 
-    #answer-section h2 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    /* Per-file result card */
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
     }
 
-    #answer-section h2 .dot {
+    .result-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .result-card-header:hover { background: rgba(108, 99, 255, 0.05); }
+
+    .result-live-dot {
       width: 8px; height: 8px;
       border-radius: 50%;
       background: var(--success);
       animation: blink 1s step-start infinite;
+      flex-shrink: 0;
+    }
+    .result-live-dot.done { animation: none; background: var(--accent2); }
+
+    .result-title {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    @keyframes blink { 50% { opacity: 0; } }
-    .dot.done { animation: none !important; background: var(--accent2); }
+    .result-collapse-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 0;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .result-collapse-btn.collapsed { transform: rotate(-90deg); }
 
-    #answer-box {
-      background: var(--surface);
+    .result-body { padding: 1.25rem; }
+
+    /* Answer box inside result cards */
+    .result-answer-box {
+      background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
+      border-radius: 10px;
+      padding: 1.25rem;
       white-space: pre-wrap;
       line-height: 1.8;
       font-size: 0.93rem;
-      min-height: 200px;
-      max-height: 70vh;
+      min-height: 80px;
+      max-height: 60vh;
       overflow-y: auto;
       word-break: break-word;
     }
 
-    #answer-box::-webkit-scrollbar { width: 6px; }
-    #answer-box::-webkit-scrollbar-track { background: transparent; }
-    #answer-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .result-answer-box::-webkit-scrollbar { width: 6px; }
+    .result-answer-box::-webkit-scrollbar-track { background: transparent; }
+    .result-answer-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    /* Question blocks (rendered after streaming completes) */
+    /* Question blocks */
     .q-block {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -336,17 +425,28 @@
       animation: blink 0.8s step-start infinite;
     }
 
-    /* Error */
-    .error-msg {
-      color: var(--error);
-      background: rgba(248, 113, 113, 0.1);
-      border: 1px solid rgba(248, 113, 113, 0.3);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      font-size: 0.875rem;
-      margin-top: 0.75rem;
+    /* Action row (per card) */
+    .action-row {
       display: none;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
     }
+
+    .action-row button {
+      padding: 0.55rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .action-row button:hover { background: var(--border); }
+    .action-row button.copied { color: var(--success); border-color: var(--success); }
+
+    @keyframes blink { 50% { opacity: 0; } }
 
     /* Settings button in header */
     #settings-btn {
@@ -468,27 +568,6 @@
       line-height: 1.6;
     }
 
-    /* Action buttons (copy / export / print) */
-    .action-row {
-      display: none;
-      gap: 0.5rem;
-      margin-top: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .action-row button {
-      padding: 0.55rem 1rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--surface2);
-      color: var(--text);
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-    }
-    .action-row button:hover { background: var(--border); }
-    .action-row button.copied { color: var(--success); border-color: var(--success); }
-
     footer {
       margin-top: 3rem;
       color: var(--muted);
@@ -499,14 +578,12 @@
     /* ── Print styles ── */
     @media print {
       body { background: #fff; color: #000; padding: 0; }
-      header, .card, #answer-section > h2, footer,
-      .qb-followup-wrap, .action-row { display: none !important; }
-      #answer-section {
-        display: block !important;
-        width: 100%;
-        max-width: 100%;
-      }
-      #answer-box {
+      header, .card, footer, .qb-followup-wrap, .action-row,
+      .result-card-header { display: none !important; }
+      #results-container { width: 100%; max-width: 100%; }
+      .result-card { border: none; border-radius: 0; margin-bottom: 2rem; }
+      .result-body { padding: 0; }
+      .result-answer-box {
         max-height: none;
         overflow: visible;
         border: none;
@@ -564,20 +641,11 @@
         d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
     </svg>
     <strong>點擊上傳或將 PDF 拖曳至此</strong>
-    <p>支援最大 20MB 的 PDF 考卷檔案</p>
-    <input type="file" id="file-input" accept=".pdf" />
+    <p>支援一次選取多份 PDF，每份最大 20MB</p>
+    <input type="file" id="file-input" accept=".pdf" multiple />
   </div>
 
-  <div id="file-info">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-    </svg>
-    <div>
-      <div id="file-name"></div>
-      <div id="file-size"></div>
-    </div>
-  </div>
+  <div id="file-queue"></div>
 
   <div id="error-msg" class="error-msg"></div>
 
@@ -589,41 +657,12 @@
   <div id="status"></div>
 </div>
 
-<div id="answer-section">
-  <h2>
-    <span id="live-dot" class="dot"></span>
-    AI 解題結果
-  </h2>
-  <div id="answer-box"></div>
-  <div class="action-row" id="action-row">
-    <button id="copy-btn">複製</button>
-    <button id="export-md-btn">⬇ 下載 Markdown</button>
-    <button id="print-btn">🖨 列印 / 存 PDF</button>
-  </div>
-</div>
+<div id="results-container"></div>
 
 <footer>Powered by Claude AI &amp; FastAPI</footer>
 
 <script>
-  const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
-  const fileInfo = document.getElementById('file-info');
-  const fileName = document.getElementById('file-name');
-  const fileSize = document.getElementById('file-size');
-  const solveBtn = document.getElementById('solve-btn');
-  const errorMsg = document.getElementById('error-msg');
-  const progressWrap = document.getElementById('progress-bar-wrap');
-  const progressBar = document.getElementById('progress-bar');
-  const statusEl    = document.getElementById('status');
-  const answerSection = document.getElementById('answer-section');
-  const answerBox   = document.getElementById('answer-box');
-  const actionRow   = document.getElementById('action-row');
-  const copyBtn     = document.getElementById('copy-btn');
-  const exportMdBtn = document.getElementById('export-md-btn');
-  const printBtn    = document.getElementById('print-btn');
-  const liveDot     = document.getElementById('live-dot');
-
-  // ── API Key state ─────────────────────────────────────────────
+  // ── API Key ────────────────────────────────────────────────────
   let apiKey = sessionStorage.getItem('anthropic_api_key') || '';
 
   function updateKeyDot() {
@@ -638,12 +677,11 @@
     return { 'Content-Type': 'application/json', 'X-API-Key': apiKey };
   }
 
-  // Settings modal
-  const overlay   = document.getElementById('settings-overlay');
-  const keyInput  = document.getElementById('api-key-input');
+  const overlay  = document.getElementById('settings-overlay');
+  const keyInput = document.getElementById('api-key-input');
 
   document.getElementById('settings-btn').addEventListener('click', () => {
-    keyInput.value = '';   // never repopulate — mask instead
+    keyInput.value = '';
     keyInput.placeholder = apiKey ? `已設定（…${apiKey.slice(-4)}）` : 'sk-ant-api03-…';
     overlay.style.display = 'flex';
     setTimeout(() => keyInput.focus(), 50);
@@ -655,7 +693,7 @@
 
   document.getElementById('save-key-btn').addEventListener('click', () => {
     const newKey = keyInput.value.trim();
-    if (newKey) {   // only overwrite if user typed a new key
+    if (newKey) {
       apiKey = newKey;
       sessionStorage.setItem('anthropic_api_key', apiKey);
     }
@@ -670,13 +708,34 @@
     updateKeyDot();
   });
 
-  keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('save-key-btn').click(); });
+  keyInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('save-key-btn').click();
+  });
 
-  // ── App state ─────────────────────────────────────────────────
-  let selectedFile = null;
-  let extractedText = '';
-  let extractedImages = [];
-  let abortController = null;
+  // ── App state ──────────────────────────────────────────────────
+  let selectedFiles = [];   // File objects in queue
+  let isBatchRunning = false;
+
+  const dropZone       = document.getElementById('drop-zone');
+  const fileInput      = document.getElementById('file-input');
+  const fileQueueEl    = document.getElementById('file-queue');
+  const solveBtn       = document.getElementById('solve-btn');
+  const errorMsg       = document.getElementById('error-msg');
+  const progressWrap   = document.getElementById('progress-bar-wrap');
+  const progressBar    = document.getElementById('progress-bar');
+  const statusEl       = document.getElementById('status');
+  const resultsContainer = document.getElementById('results-container');
+
+  // ── Utilities ──────────────────────────────────────────────────
+
+  function escHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
   function formatBytes(bytes) {
     if (bytes < 1024) return bytes + ' B';
@@ -699,115 +758,177 @@
     statusEl.textContent = msg;
   }
 
-  function setFile(file) {
-    if (!file) return;
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      showError('請選擇 PDF 檔案');
-      return;
+  // ── File queue management ──────────────────────────────────────
+
+  function addFiles(fileList) {
+    let anyError = false;
+    for (const file of fileList) {
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        showError(`「${file.name}」不是 PDF 檔案`);
+        anyError = true;
+        continue;
+      }
+      if (file.size > 20 * 1024 * 1024) {
+        showError(`「${file.name}」超過 20MB 限制`);
+        anyError = true;
+        continue;
+      }
+      // Skip exact duplicates already in queue
+      if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) continue;
+      selectedFiles.push(file);
     }
-    if (file.size > 20 * 1024 * 1024) {
-      showError('檔案大小不能超過 20MB');
-      return;
-    }
-    clearError();
-    selectedFile = file;
-    fileName.textContent = file.name;
-    fileSize.textContent = formatBytes(file.size);
-    fileInfo.style.display = 'flex';
-    solveBtn.disabled = false;
-    solveBtn.textContent = '上傳並解題';
-    extractedText = '';
-    extractedImages = [];
-    answerSection.style.display = 'none';
-    copyBtn.style.display = 'none';
+    if (!anyError) clearError();
+    renderFileQueue();
   }
 
-  // Click to open file picker
-  dropZone.addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
-  fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+  function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    renderFileQueue();
+  }
 
-  // Drag & drop
-  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file) setFile(file);
-  });
-
-  // Main flow
-  solveBtn.addEventListener('click', async () => {
-    if (!selectedFile) return;
-    clearError();
-
-    // Already have extracted data — skip upload
-    if (extractedText || extractedImages.length > 0) {
-      startSolving(extractedText, extractedImages);
+  function renderFileQueue() {
+    if (selectedFiles.length === 0) {
+      fileQueueEl.style.display = 'none';
+      solveBtn.disabled = true;
+      solveBtn.textContent = '上傳並解題';
       return;
     }
 
-    solveBtn.disabled = true;
-    solveBtn.textContent = '正在解析 PDF...';
-    progressWrap.style.display = 'block';
-    progressBar.style.width = '30%';
-    setStatus('上傳並提取 PDF 內容中...');
+    fileQueueEl.style.display = 'block';
+    fileQueueEl.innerHTML = selectedFiles.map((f, i) => `
+      <div class="fq-item" id="fq-item-${i}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
+        <div class="fq-name">${escHtml(f.name)}</div>
+        <div class="fq-size">${formatBytes(f.size)}</div>
+        <div class="fq-status" id="fq-status-${i}">⏳ 等待中</div>
+        <button class="fq-remove" data-index="${i}" title="移除">✕</button>
+      </div>
+    `).join('');
 
-    const formData = new FormData();
-    formData.append('file', selectedFile);
+    // Wire remove buttons
+    fileQueueEl.querySelectorAll('.fq-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!isBatchRunning) removeFile(parseInt(btn.dataset.index));
+      });
+    });
 
-    try {
-      const res = await fetch('/upload', { method: 'POST', body: formData });
-      const data = await res.json();
+    solveBtn.disabled = false;
+    solveBtn.textContent = selectedFiles.length > 1
+      ? `全部解題（${selectedFiles.length} 份）`
+      : '上傳並解題';
+  }
 
-      if (!res.ok) throw new Error(data.detail || '上傳失敗');
+  // ── File picker / drag-drop ────────────────────────────────────
 
-      progressBar.style.width = '60%';
-
-      if (data.mode === 'ocr') {
-        extractedImages = data.images;
-        extractedText = '';
-        setStatus(`偵測到掃描 PDF（${data.pages} 頁），切換 AI 視覺辨識模式...`);
-      } else {
-        extractedText = data.text;
-        extractedImages = [];
-      }
-
-      startSolving(extractedText, extractedImages);
-
-    } catch (err) {
-      showError(err.message || '發生未知錯誤');
-      solveBtn.disabled = false;
-      solveBtn.textContent = '上傳並解題';
-      progressWrap.style.display = 'none';
-      setStatus('');
-    }
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') fileInput.click();
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) addFiles(fileInput.files);
+    fileInput.value = ''; // reset so same files can be re-added after removal
   });
 
-  async function startSolving(text, images = []) {
-    if (abortController) { abortController.abort(); abortController = null; }
-    abortController = new AbortController();
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+  });
 
-    const isOcr = images.length > 0;
+  // ── Batch solve ────────────────────────────────────────────────
+
+  solveBtn.addEventListener('click', () => {
+    if (isBatchRunning || selectedFiles.length === 0) return;
+    startBatch();
+  });
+
+  async function startBatch() {
+    isBatchRunning = true;
+    clearError();
     solveBtn.disabled = true;
-    solveBtn.textContent = '解題中...';
-    progressBar.style.width = '80%';
-    setStatus(isOcr
-      ? `AI 正在辨識手寫內容並解題，共 ${images.length} 頁（可能需要較長時間）...`
-      : 'AI 正在分析題目並生成解答...');
+    resultsContainer.innerHTML = '';
 
-    answerSection.style.display = 'block';
-    answerBox.textContent = '';
-    copyBtn.style.display = 'none';
-    liveDot.classList.remove('done');
+    // Disable queue remove buttons during processing
+    fileQueueEl.querySelectorAll('.fq-remove').forEach(b => b.disabled = true);
 
+    const total = selectedFiles.length;
+
+    for (let i = 0; i < total; i++) {
+      const file = selectedFiles[i];
+      const statusBadge = document.getElementById(`fq-status-${i}`);
+      statusBadge.textContent = '🔄 處理中';
+      statusBadge.className = 'fq-status processing';
+
+      setStatus(total > 1
+        ? `正在處理第 ${i + 1} / ${total} 份：${file.name}`
+        : `正在處理：${file.name}`);
+
+      progressWrap.style.display = 'block';
+      progressBar.style.width = '10%';
+
+      const { card, answerBox, actionRow, liveDot } = createResultCard(file.name);
+      resultsContainer.appendChild(card);
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      const ok = await processFile(file, answerBox, actionRow, liveDot);
+
+      statusBadge.textContent = ok ? '✅ 完成' : '❌ 錯誤';
+      statusBadge.className = 'fq-status ' + (ok ? 'done' : 'error');
+    }
+
+    progressBar.style.width = '100%';
+    setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 600);
+    setStatus('');
+
+    isBatchRunning = false;
+    solveBtn.disabled = false;
+    solveBtn.textContent = total > 1 ? `全部解題（${total} 份）` : '重新解題';
+    fileQueueEl.querySelectorAll('.fq-remove').forEach(b => b.disabled = false);
+  }
+
+  // ── Process a single file ──────────────────────────────────────
+
+  async function processFile(file, answerBox, actionRow, liveDot) {
+    // Step 1: upload
+    progressBar.style.width = '30%';
+    const formData = new FormData();
+    formData.append('file', file);
+
+    let uploadData;
+    try {
+      const res = await fetch('/upload', { method: 'POST', body: formData });
+      uploadData = await res.json();
+      if (!res.ok) throw new Error(uploadData.detail || '上傳失敗');
+    } catch (err) {
+      answerBox.textContent = '上傳失敗：' + (err.message || '未知錯誤');
+      liveDot.classList.add('done');
+      return false;
+    }
+
+    progressBar.style.width = '55%';
+
+    const isOcr = uploadData.mode === 'ocr';
+    const text   = isOcr ? '' : (uploadData.text || '');
+    const images = isOcr ? (uploadData.images || []) : [];
+
+    if (isOcr) {
+      answerBox.textContent = `偵測到掃描 PDF（${uploadData.pages} 頁），AI 視覺辨識中...\n`;
+    }
+
+    // Step 2: solve (stream)
+    progressBar.style.width = '70%';
+
+    let fullText = '';
     try {
       const res = await fetch('/solve', {
         method: 'POST',
         headers: apiHeaders(),
         body: JSON.stringify({ text, images }),
-        signal: abortController.signal,
       });
 
       if (!res.ok) {
@@ -817,15 +938,16 @@
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let buffer = '';
+      let buf = '';
+
+      answerBox.textContent = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split('\n');
-        buffer = lines.pop(); // keep incomplete line
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop();
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
@@ -833,89 +955,104 @@
           try { payload = JSON.parse(line.slice(6)); } catch { continue; }
 
           if (payload.error) {
-            showError(payload.error);
-            finishSolving(true);
-            return;
+            answerBox.textContent += '\n錯誤：' + payload.error;
+            liveDot.classList.add('done');
+            return false;
           }
-          if (payload.done) {
-            finishSolving(false);
-            return;
-          }
+          if (payload.done) break;
           if (payload.text) {
-            answerBox.textContent += payload.text;
+            fullText += payload.text;
+            answerBox.textContent = fullText;
             answerBox.scrollTop = answerBox.scrollHeight;
           }
         }
       }
-      finishSolving(false);
-
     } catch (err) {
-      if (err.name === 'AbortError') return;
-      showError(err.message || '串流連線中斷，請重試');
-      finishSolving(true);
+      answerBox.textContent = '串流錯誤：' + (err.message || '請重試');
+      liveDot.classList.add('done');
+      return false;
     }
-  }
 
-  function finishSolving(isError) {
-    abortController = null;
     progressBar.style.width = '100%';
-    setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 600);
-    setStatus('');
     liveDot.classList.add('done');
-    solveBtn.disabled = false;
-    solveBtn.textContent = '重新解題';
 
-    if (!isError && answerBox.textContent.trim()) {
-      renderBlocks(answerBox.textContent);
+    if (fullText.trim()) {
+      renderBlocks(answerBox, fullText);
       actionRow.style.display = 'flex';
     }
+    return true;
   }
 
-  // ── Export / print actions ────────────────────────────────────
+  // ── Result card factory ────────────────────────────────────────
 
-  copyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(answerBox.textContent).then(() => {
-      copyBtn.textContent = '已複製 ✓';
-      copyBtn.classList.add('copied');
-      setTimeout(() => { copyBtn.textContent = '複製'; copyBtn.classList.remove('copied'); }, 2000);
+  function createResultCard(filename) {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+
+    card.innerHTML = `
+      <div class="result-card-header">
+        <span class="result-live-dot"></span>
+        <span class="result-title">${escHtml(filename)}</span>
+        <button class="result-collapse-btn" title="展開 / 收合">▼</button>
+      </div>
+      <div class="result-body">
+        <div class="result-answer-box"></div>
+        <div class="action-row">
+          <button class="copy-btn">複製</button>
+          <button class="export-md-btn">⬇ 下載 Markdown</button>
+          <button class="print-btn">🖨 列印 / 存 PDF</button>
+        </div>
+      </div>`;
+
+    const liveDot    = card.querySelector('.result-live-dot');
+    const header     = card.querySelector('.result-card-header');
+    const collapseBtn = card.querySelector('.result-collapse-btn');
+    const body       = card.querySelector('.result-body');
+    const answerBox  = card.querySelector('.result-answer-box');
+    const actionRow  = card.querySelector('.action-row');
+    const copyBtn    = card.querySelector('.copy-btn');
+    const exportBtn  = card.querySelector('.export-md-btn');
+    const printBtn   = card.querySelector('.print-btn');
+
+    // Collapse toggle
+    header.addEventListener('click', () => {
+      const collapsed = body.style.display === 'none';
+      body.style.display = collapsed ? 'block' : 'none';
+      collapseBtn.classList.toggle('collapsed', !collapsed);
     });
-  });
 
-  exportMdBtn.addEventListener('click', () => {
-    const md = answerBox.textContent;
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'quiz-answers.md';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
+    // Export actions
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(answerBox.textContent).then(() => {
+        copyBtn.textContent = '已複製 ✓';
+        copyBtn.classList.add('copied');
+        setTimeout(() => { copyBtn.textContent = '複製'; copyBtn.classList.remove('copied'); }, 2000);
+      });
+    });
 
-  printBtn.addEventListener('click', () => window.print());
+    exportBtn.addEventListener('click', () => {
+      const blob = new Blob([answerBox.textContent], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename.replace(/\.pdf$/i, '') + '-answers.md';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
 
-  // ── Helpers ──────────────────────────────────────────────────
+    printBtn.addEventListener('click', () => window.print());
 
-  function escHtml(str) {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+    return { card, answerBox, actionRow, liveDot };
   }
 
-  // ── Block rendering ──────────────────────────────────────────
+  // ── Block rendering ────────────────────────────────────────────
 
-  function renderBlocks(fullText) {
-    // Split on 【...】 markers, keeping markers as separate segments
+  function renderBlocks(answerBox, fullText) {
     const segments = fullText.split(/(【[^】]+】)/);
-    // segments: [preamble, header1, content1, header2, content2, ...]
     answerBox.innerHTML = '';
 
-    // Preamble before first header
     if (segments[0].trim()) {
       const pre = document.createElement('div');
       pre.className = 'q-block';
@@ -953,14 +1090,13 @@
         </div>
       </div>`;
 
-    const context    = header + '\n' + content;
-    const toggleBtn  = div.querySelector('.followup-toggle-btn');
-    const panel      = div.querySelector('.followup-panel');
-    const textarea   = div.querySelector('.followup-input');
-    const sendBtn    = div.querySelector('.followup-send-btn');
-    const historyEl  = div.querySelector('.followup-history');
+    const context   = header + '\n' + content;
+    const toggleBtn = div.querySelector('.followup-toggle-btn');
+    const panel     = div.querySelector('.followup-panel');
+    const textarea  = div.querySelector('.followup-input');
+    const sendBtn   = div.querySelector('.followup-send-btn');
+    const historyEl = div.querySelector('.followup-history');
 
-    // Toggle panel
     toggleBtn.addEventListener('click', () => {
       const open = panel.style.display !== 'none';
       panel.style.display = open ? 'none' : 'block';
@@ -968,12 +1104,10 @@
       toggleBtn.classList.toggle('open', !open);
     });
 
-    // Quick-action buttons
     div.querySelectorAll('.followup-quick button').forEach(btn => {
       btn.addEventListener('click', () => sendFollowup(context, btn.dataset.q, historyEl, div));
     });
 
-    // Custom send
     const doSend = () => {
       const q = textarea.value.trim();
       if (q) { textarea.value = ''; sendFollowup(context, q, historyEl, div); }
@@ -986,14 +1120,12 @@
     return div;
   }
 
-  // ── Follow-up streaming ──────────────────────────────────────
+  // ── Follow-up streaming ────────────────────────────────────────
 
   async function sendFollowup(context, question, historyEl, blockDiv) {
-    // Lock all interactive controls in this block
     const btns = blockDiv.querySelectorAll('button');
     btns.forEach(b => b.disabled = true);
 
-    // Create exchange entry
     const exchange = document.createElement('div');
     exchange.className = 'followup-exchange';
     exchange.innerHTML = `<div class="fq">你：${escHtml(question)}</div><div class="fa streaming"></div>`;
