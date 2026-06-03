@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: pdf-studytool
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: ALLOWED_ORIGINS
+        sync: false   # 部署後在 Render 面板填入你的網址，例如 https://pdf-studytool.onrender.com
