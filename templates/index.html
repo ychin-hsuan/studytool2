@@ -8,16 +8,16 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --surface2: #22263a;
-      --border: #2e3250;
-      --accent: #6c63ff;
-      --accent2: #a78bfa;
-      --text: #e2e8f0;
-      --muted: #8892b0;
-      --success: #4ade80;
-      --error: #f87171;
+      --bg: #f0f2f9;
+      --surface: #ffffff;
+      --surface2: #e8ecf5;
+      --border: #cdd2e8;
+      --accent: #5b52e0;
+      --accent2: #7c3aed;
+      --text: #1e2030;
+      --muted: #5a6380;
+      --success: #16a34a;
+      --error: #dc2626;
     }
 
     body {
@@ -575,6 +575,28 @@
       text-align: center;
     }
 
+    /* ── Markdown content styles ── */
+    .qb-content p { margin: 0.35rem 0; line-height: 1.8; }
+    .qb-content p:first-child { margin-top: 0; }
+    .qb-content p:last-child { margin-bottom: 0; }
+    .qb-content br { display: block; content: ''; margin: 0.2rem 0; }
+    .qb-content strong { font-weight: 700; color: var(--text); }
+    .qb-content em { font-style: italic; }
+    .qb-content h3 { font-size: 1rem; font-weight: 700; color: var(--accent2); margin: 0.8rem 0 0.3rem; }
+    .qb-content h4 { font-size: 0.95rem; font-weight: 600; color: var(--accent2); margin: 0.6rem 0 0.25rem; }
+    .qb-content h5 { font-size: 0.9rem; font-weight: 600; color: var(--accent2); margin: 0.5rem 0 0.2rem; }
+    .qb-content ul, .qb-content ol { margin: 0.4rem 0 0.4rem 1.4rem; }
+    .qb-content li { margin-bottom: 0.25rem; line-height: 1.75; }
+    .qb-content code {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.1em 0.35em;
+      font-family: 'Consolas', 'Fira Code', monospace;
+      font-size: 0.88em;
+      color: var(--accent2);
+    }
+
     /* ── Print styles ── */
     @media print {
       body { background: #fff; color: #000; padding: 0; }
@@ -1047,6 +1069,53 @@
     return { card, answerBox, actionRow, liveDot };
   }
 
+  // ── Markdown renderer ─────────────────────────────────────────
+
+  function applyInline(text) {
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    text = text.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+    text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+    return text;
+  }
+
+  function renderMarkdown(raw) {
+    const lines = escHtml(raw).split('\n');
+    const out = [];
+    let inUl = false, inOl = false;
+
+    function closeList() {
+      if (inUl) { out.push('</ul>'); inUl = false; }
+      if (inOl) { out.push('</ol>'); inOl = false; }
+    }
+
+    for (const line of lines) {
+      const olM = line.match(/^(\d+)[.)]\s+(.+)$/);
+      if (olM) {
+        if (!inOl) { closeList(); out.push('<ol>'); inOl = true; }
+        out.push(`<li>${applyInline(olM[2])}</li>`);
+        continue;
+      }
+      const ulM = line.match(/^[-*•]\s+(.+)$/);
+      if (ulM) {
+        if (!inUl) { closeList(); out.push('<ul>'); inUl = true; }
+        out.push(`<li>${applyInline(ulM[1])}</li>`);
+        continue;
+      }
+      closeList();
+      const h3 = line.match(/^###\s+(.+)$/);
+      if (h3) { out.push(`<h5>${applyInline(h3[1])}</h5>`); continue; }
+      const h2 = line.match(/^##\s+(.+)$/);
+      if (h2) { out.push(`<h4>${applyInline(h2[1])}</h4>`); continue; }
+      const h1 = line.match(/^#\s+(.+)$/);
+      if (h1) { out.push(`<h3>${applyInline(h1[1])}</h3>`); continue; }
+      if (line.trim() === '') { out.push('<br>'); continue; }
+      out.push(`<p>${applyInline(line)}</p>`);
+    }
+    closeList();
+    return out.join('');
+  }
+
   // ── Block rendering ────────────────────────────────────────────
 
   function renderBlocks(answerBox, fullText) {
@@ -1056,7 +1125,7 @@
     if (segments[0].trim()) {
       const pre = document.createElement('div');
       pre.className = 'q-block';
-      pre.innerHTML = `<div class="qb-content">${escHtml(segments[0].trim())}</div>`;
+      pre.innerHTML = `<div class="qb-content">${renderMarkdown(segments[0].trim())}</div>`;
       answerBox.appendChild(pre);
     }
 
@@ -1073,7 +1142,7 @@
 
     div.innerHTML = `
       <div class="qb-header">${escHtml(header)}</div>
-      <div class="qb-content">${escHtml(content)}</div>
+      <div class="qb-content">${renderMarkdown(content)}</div>
       <div class="qb-followup-wrap">
         <button class="followup-toggle-btn">💬 追問這題</button>
         <div class="followup-panel" style="display:none">
