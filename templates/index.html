@@ -262,6 +262,7 @@
     .qb-content p { margin: 0.35rem 0; line-height: 1.8; }
     .qb-content p:first-child { margin-top: 0; }
     .qb-content p:last-child { margin-bottom: 0; }
+    .qb-content hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
     .qb-content br { display: block; content: ''; margin: 0.15rem 0; }
     .qb-content strong { font-weight: 700; }
     .qb-content em { font-style: italic; }
@@ -451,12 +452,20 @@
       body { background: #fff; color: #000; padding: 0; }
       header, .tab-nav, .card, footer, .qb-followup-wrap, .qb-status-row,
       .action-row, .result-card-header { display: none !important; }
-      #results-container { width: 100%; max-width: 100%; }
-      .result-card { border: none; border-radius: 0; margin-bottom: 2rem; }
+      #results-container, #solve-view { width: 100%; max-width: 100%; }
+      .result-card { border: none; border-radius: 0; margin-bottom: 1.5rem; box-shadow: none; }
       .result-body { padding: 0; }
-      .result-answer-box { max-height: none; overflow: visible; border: none; padding: 0; background: transparent; }
-      .q-block { background: transparent; border: 1px solid #ccc; break-inside: avoid; margin-bottom: 1rem; }
-      .qb-header { color: #4b0082; }
+      .result-answer-box, .result-answer-box.rendered {
+        background: transparent !important; border: none; padding: 0;
+        max-height: none; overflow: visible; white-space: normal;
+      }
+      .q-block {
+        background: #fff !important; border: 1px solid #ccc !important;
+        border-left: 3px solid #5b52e0 !important; border-radius: 0 8px 8px 0 !important;
+        break-inside: avoid; margin-bottom: 1rem; box-shadow: none !important;
+      }
+      .qb-header { background: #f5f3ff !important; color: #4b0082 !important; }
+      .qb-content hr { border-top: 1px solid #ccc; }
     }
   </style>
 </head>
@@ -891,7 +900,11 @@
     } catch (e) { answerBox.textContent = '串流錯誤：' + (e.message || '請重試'); liveDot.classList.add('done'); return false; }
 
     progressBar.style.width = '100%'; liveDot.classList.add('done');
-    if (fullText.trim()) { renderBlocks(answerBox, fullText, file.name); actionRow.style.display = 'flex'; }
+    if (fullText.trim()) {
+      answerBox.dataset.rawText = fullText;
+      renderBlocks(answerBox, fullText, file.name);
+      actionRow.style.display = 'flex';
+    }
     return true;
   }
 
@@ -925,14 +938,16 @@
     });
 
     card.querySelector('.copy-btn').addEventListener('click', function() {
-      navigator.clipboard.writeText(answerBox.textContent).then(() => {
+      const text = answerBox.dataset.rawText || answerBox.textContent;
+      navigator.clipboard.writeText(text).then(() => {
         this.textContent = '已複製 ✓'; this.classList.add('copied');
         setTimeout(() => { this.textContent = '複製'; this.classList.remove('copied'); }, 2000);
       });
     });
 
     card.querySelector('.export-md-btn').addEventListener('click', () => {
-      const blob = new Blob([answerBox.textContent], { type: 'text/markdown;charset=utf-8' });
+      const text = answerBox.dataset.rawText || answerBox.textContent;
+      const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
       const url = URL.createObjectURL(blob); const a = document.createElement('a');
       a.href = url; a.download = filename.replace(/\.pdf$/i,'') + '-answers.md';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
@@ -962,6 +977,7 @@
       const ulM = line.match(/^[-*•]\s+(.+)$/);
       if (ulM) { if (!inUl) { closeList(); out.push('<ul>'); inUl=true; } out.push(`<li>${applyInline(ulM[1])}</li>`); continue; }
       closeList();
+      if (line.match(/^[-*_]{3,}$/)) { out.push('<hr>'); continue; }
       const h3 = line.match(/^###\s+(.+)$/); if (h3) { out.push(`<h5>${applyInline(h3[1])}</h5>`); continue; }
       const h2 = line.match(/^##\s+(.+)$/);  if (h2) { out.push(`<h4>${applyInline(h2[1])}</h4>`); continue; }
       const h1 = line.match(/^#\s+(.+)$/);   if (h1) { out.push(`<h3>${applyInline(h1[1])}</h3>`); continue; }
