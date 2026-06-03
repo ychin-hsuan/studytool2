@@ -312,7 +312,7 @@
 
   let selectedFile = null;
   let extractedText = '';
-  let eventSource = null;
+  let abortController = null;
 
   function formatBytes(bytes) {
     if (bytes < 1024) return bytes + ' B';
@@ -413,8 +413,9 @@
     }
   });
 
-  function startSolving(text) {
-    if (eventSource) { eventSource.close(); eventSource = null; }
+  async function startSolving(text) {
+    if (abortController) { abortController.abort(); abortController = null; }
+    abortController = new AbortController();
 
     solveBtn.disabled = true;
     solveBtn.textContent = '解題中...';
@@ -427,39 +428,61 @@
     copyBtn.style.display = 'none';
     liveDot.classList.remove('done');
 
-    const url = '/solve?text=' + encodeURIComponent(text);
-    eventSource = new EventSource(url);
+    try {
+      const res = await fetch('/solve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+        signal: abortController.signal,
+      });
 
-    eventSource.onmessage = (e) => {
-      const payload = JSON.parse(e.data);
-
-      if (payload.error) {
-        showError(payload.error);
-        finishSolving(true);
-        return;
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || '解題請求失敗');
       }
 
-      if (payload.done) {
-        finishSolving(false);
-        return;
-      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
 
-      if (payload.text) {
-        answerBox.textContent += payload.text;
-        // Auto-scroll
-        answerBox.scrollTop = answerBox.scrollHeight;
-      }
-    };
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
 
-    eventSource.onerror = () => {
-      if (eventSource.readyState === EventSource.CLOSED) return;
-      showError('串流連線中斷，請重試');
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // keep incomplete line
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const payload = JSON.parse(line.slice(6));
+
+          if (payload.error) {
+            showError(payload.error);
+            finishSolving(true);
+            return;
+          }
+          if (payload.done) {
+            finishSolving(false);
+            return;
+          }
+          if (payload.text) {
+            answerBox.textContent += payload.text;
+            answerBox.scrollTop = answerBox.scrollHeight;
+          }
+        }
+      }
+      finishSolving(false);
+
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      showError(err.message || '串流連線中斷，請重試');
       finishSolving(true);
-    };
+    }
   }
 
   function finishSolving(isError) {
-    if (eventSource) { eventSource.close(); eventSource = null; }
+    abortController = null;
     progressBar.style.width = '100%';
     setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 600);
     setStatus('');

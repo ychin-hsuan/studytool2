@@ -9,7 +9,7 @@ import anthropic
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
-from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -95,12 +95,16 @@ async def upload_pdf(file: UploadFile = File(...)):
     return {"text": text, "pages": text.count("\n\n") + 1}
 
 
-@app.get("/solve")
-async def solve(text: str):
-    if not text.strip():
+class SolveRequest(BaseModel):
+    text: str
+
+
+@app.post("/solve")
+async def solve(req: SolveRequest):
+    if not req.text.strip():
         raise HTTPException(status_code=400, detail="題目內容不可為空")
     return StreamingResponse(
-        stream_answers(text),
+        stream_answers(req.text),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
