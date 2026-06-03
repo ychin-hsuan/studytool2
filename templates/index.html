@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF 智慧解題工具</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3250;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --text: #e2e8f0;
+      --muted: #8892b0;
+      --success: #4ade80;
+      --error: #f87171;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      color: var(--muted);
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Drop zone */
+    #drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    #drop-zone:hover, #drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(108, 99, 255, 0.06);
+    }
+
+    #drop-zone svg {
+      width: 48px;
+      height: 48px;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    #drop-zone p { color: var(--muted); font-size: 0.9rem; margin-top: 0.4rem; }
+    #drop-zone strong { color: var(--text); font-size: 1rem; }
+
+    #file-input { display: none; }
+
+    /* File info */
+    #file-info {
+      display: none;
+      align-items: center;
+      gap: 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-top: 1rem;
+    }
+
+    #file-info svg { color: var(--accent2); flex-shrink: 0; }
+    #file-name { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #file-size { font-size: 0.8rem; color: var(--muted); }
+
+    /* Button */
+    #solve-btn {
+      display: block;
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 0.85rem;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    #solve-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+    #solve-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Progress */
+    #progress-bar-wrap {
+      display: none;
+      margin-top: 1rem;
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px;
+      transition: width 0.3s;
+      animation: pulse-bar 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse-bar {
+      from { opacity: 1; }
+      to { opacity: 0.6; }
+    }
+
+    /* Status */
+    #status {
+      display: none;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Answer section */
+    #answer-section {
+      display: none;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    #answer-section h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #answer-section h2 .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: blink 1s step-start infinite;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+    .dot.done { animation: none !important; background: var(--accent2); }
+
+    #answer-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      white-space: pre-wrap;
+      line-height: 1.8;
+      font-size: 0.93rem;
+      min-height: 200px;
+      max-height: 70vh;
+      overflow-y: auto;
+      word-break: break-word;
+    }
+
+    #answer-box::-webkit-scrollbar { width: 6px; }
+    #answer-box::-webkit-scrollbar-track { background: transparent; }
+    #answer-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* Highlight question headers */
+    .q-header {
+      color: var(--accent2);
+      font-weight: 700;
+    }
+
+    /* Error */
+    .error-msg {
+      color: var(--error);
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      margin-top: 0.75rem;
+      display: none;
+    }
+
+    /* Copy button */
+    #copy-btn {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #copy-btn:hover { background: var(--border); }
+    #copy-btn.copied { color: var(--success); border-color: var(--success); }
+
+    footer {
+      margin-top: 3rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>PDF 智慧解題工具</h1>
+  <p>上傳含有題目的 PDF，AI 即時為您解答每一道題</p>
+</header>
+
+<div class="card">
+  <div id="drop-zone" role="button" tabindex="0" aria-label="點擊或拖曳上傳 PDF">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+        d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+    </svg>
+    <strong>點擊上傳或將 PDF 拖曳至此</strong>
+    <p>支援最大 20MB 的 PDF 考卷檔案</p>
+    <input type="file" id="file-input" accept=".pdf" />
+  </div>
+
+  <div id="file-info">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+    </svg>
+    <div>
+      <div id="file-name"></div>
+      <div id="file-size"></div>
+    </div>
+  </div>
+
+  <div id="error-msg" class="error-msg"></div>
+
+  <button id="solve-btn" disabled>上傳並解題</button>
+
+  <div id="progress-bar-wrap">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="status"></div>
+</div>
+
+<div id="answer-section">
+  <h2>
+    <span id="live-dot" class="dot"></span>
+    AI 解題結果
+  </h2>
+  <div id="answer-box"></div>
+  <button id="copy-btn">複製全部解答</button>
+</div>
+
+<footer>Powered by Claude AI &amp; FastAPI</footer>
+
+<script>
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const fileInfo = document.getElementById('file-info');
+  const fileName = document.getElementById('file-name');
+  const fileSize = document.getElementById('file-size');
+  const solveBtn = document.getElementById('solve-btn');
+  const errorMsg = document.getElementById('error-msg');
+  const progressWrap = document.getElementById('progress-bar-wrap');
+  const progressBar = document.getElementById('progress-bar');
+  const statusEl = document.getElementById('status');
+  const answerSection = document.getElementById('answer-section');
+  const answerBox = document.getElementById('answer-box');
+  const copyBtn = document.getElementById('copy-btn');
+  const liveDot = document.getElementById('live-dot');
+
+  let selectedFile = null;
+  let extractedText = '';
+  let eventSource = null;
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.style.display = 'block';
+  }
+
+  function clearError() {
+    errorMsg.style.display = 'none';
+    errorMsg.textContent = '';
+  }
+
+  function setStatus(msg) {
+    statusEl.style.display = msg ? 'block' : 'none';
+    statusEl.textContent = msg;
+  }
+
+  function setFile(file) {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      showError('請選擇 PDF 檔案');
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      showError('檔案大小不能超過 20MB');
+      return;
+    }
+    clearError();
+    selectedFile = file;
+    fileName.textContent = file.name;
+    fileSize.textContent = formatBytes(file.size);
+    fileInfo.style.display = 'flex';
+    solveBtn.disabled = false;
+    solveBtn.textContent = '上傳並解題';
+    extractedText = '';
+    answerSection.style.display = 'none';
+    copyBtn.style.display = 'none';
+  }
+
+  // Click to open file picker
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+
+  // Drag & drop
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) setFile(file);
+  });
+
+  // Main flow
+  solveBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+    clearError();
+
+    // If we already have extracted text, go straight to solving
+    if (extractedText) {
+      startSolving(extractedText);
+      return;
+    }
+
+    solveBtn.disabled = true;
+    solveBtn.textContent = '正在解析 PDF...';
+    progressWrap.style.display = 'block';
+    progressBar.style.width = '30%';
+    setStatus('上傳並提取 PDF 文字中...');
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const res = await fetch('/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.detail || '上傳失敗');
+      }
+
+      progressBar.style.width = '60%';
+      extractedText = data.text;
+      startSolving(extractedText);
+
+    } catch (err) {
+      showError(err.message || '發生未知錯誤');
+      solveBtn.disabled = false;
+      solveBtn.textContent = '上傳並解題';
+      progressWrap.style.display = 'none';
+      setStatus('');
+    }
+  });
+
+  function startSolving(text) {
+    if (eventSource) { eventSource.close(); eventSource = null; }
+
+    solveBtn.disabled = true;
+    solveBtn.textContent = '解題中...';
+    progressBar.style.width = '80%';
+    setStatus('AI 正在分析題目並生成解答...');
+
+    answerSection.style.display = 'block';
+    answerBox.innerHTML = '';
+    answerBox.textContent = '';
+    copyBtn.style.display = 'none';
+    liveDot.classList.remove('done');
+
+    const url = '/solve?text=' + encodeURIComponent(text);
+    eventSource = new EventSource(url);
+
+    eventSource.onmessage = (e) => {
+      const payload = JSON.parse(e.data);
+
+      if (payload.error) {
+        showError(payload.error);
+        finishSolving(true);
+        return;
+      }
+
+      if (payload.done) {
+        finishSolving(false);
+        return;
+      }
+
+      if (payload.text) {
+        answerBox.textContent += payload.text;
+        // Auto-scroll
+        answerBox.scrollTop = answerBox.scrollHeight;
+      }
+    };
+
+    eventSource.onerror = () => {
+      if (eventSource.readyState === EventSource.CLOSED) return;
+      showError('串流連線中斷，請重試');
+      finishSolving(true);
+    };
+  }
+
+  function finishSolving(isError) {
+    if (eventSource) { eventSource.close(); eventSource = null; }
+    progressBar.style.width = '100%';
+    setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 600);
+    setStatus('');
+    liveDot.classList.add('done');
+    solveBtn.disabled = false;
+    solveBtn.textContent = '重新解題';
+
+    if (!isError && answerBox.textContent.trim()) {
+      copyBtn.style.display = 'inline-block';
+    }
+  }
+
+  // Copy button
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(answerBox.textContent).then(() => {
+      copyBtn.textContent = '已複製!';
+      copyBtn.classList.add('copied');
+      setTimeout(() => {
+        copyBtn.textContent = '複製全部解答';
+        copyBtn.classList.remove('copied');
+      }, 2000);
+    });
+  });
+</script>
+</body>
+</html>

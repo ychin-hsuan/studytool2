@@ -1,0 +1,109 @@
+import os
+import io
+import json
+import asyncio
+from pathlib import Path
+
+import fitz  # PyMuPDF
+import anthropic
+from dotenv import load_dotenv
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+
+load_dotenv()
+
+app = FastAPI(title="PDF Quiz Solver")
+
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+
+
+def extract_text_from_pdf(pdf_bytes: bytes) -> str:
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    pages = []
+    for page in doc:
+        pages.append(page.get_text())
+    doc.close()
+    return "\n\n".join(pages)
+
+
+async def stream_answers(pdf_text: str):
+    if not ANTHROPIC_API_KEY:
+        yield f"data: {json.dumps({'error': '請設定 ANTHROPIC_API_KEY 環境變數'})}\n\n"
+        return
+
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+    system_prompt = """你是一位專業的解題老師。
+使用者會提供一份包含多道題目的考卷內容。請：
+1. 找出所有題目（包括選擇題、填充題、問答題、計算題等）
+2. 依序為每道題目提供詳細的正確解答與解題說明
+3. 格式使用：【第X題】題目內容 → 解答：...（附解析）
+4. 若題目有選項，請明確指出正確選項並說明原因
+5. 使用繁體中文回答
+6. 解析要清楚易懂，適合學生理解"""
+
+    user_message = f"""以下是 PDF 考卷的內容，請幫我解答所有題目：
+
+{pdf_text}"""
+
+    try:
+        with client.messages.stream(
+            model="claude-sonnet-4-6",
+            max_tokens=8192,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_message}],
+        ) as stream:
+            for text in stream.text_stream:
+                payload = json.dumps({"text": text}, ensure_ascii=False)
+                yield f"data: {payload}\n\n"
+                await asyncio.sleep(0)
+
+        yield f"data: {json.dumps({'done': True})}\n\n"
+
+    except anthropic.AuthenticationError:
+        yield f"data: {json.dumps({'error': 'API 金鑰無效，請確認 ANTHROPIC_API_KEY'})}\n\n"
+    except anthropic.RateLimitError:
+        yield f"data: {json.dumps({'error': '已超過 API 使用限制，請稍後再試'})}\n\n"
+    except Exception as e:
+        yield f"data: {json.dumps({'error': f'發生錯誤：{str(e)}'})}\n\n"
+
+
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    html_path = Path(__file__).parent / "templates" / "index.html"
+    return html_path.read_text(encoding="utf-8")
+
+
+@app.post("/upload")
+async def upload_pdf(file: UploadFile = File(...)):
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="只接受 PDF 檔案")
+
+    content = await file.read()
+    if len(content) > 20 * 1024 * 1024:  # 20 MB limit
+        raise HTTPException(status_code=400, detail="檔案大小不能超過 20MB")
+
+    try:
+        text = extract_text_from_pdf(content)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"無法解析 PDF：{str(e)}")
+
+    if not text.strip():
+        raise HTTPException(status_code=422, detail="PDF 內容為空或無法提取文字（可能是掃描圖片 PDF）")
+
+    return {"text": text, "pages": text.count("\n\n") + 1}
+
+
+@app.get("/solve")
+async def solve(text: str):
+    if not text.strip():
+        raise HTTPException(status_code=400, detail="題目內容不可為空")
+    return StreamingResponse(
+        stream_answers(text),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
