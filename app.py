@@ -1,7 +1,6 @@
 import os
 import json
 import base64
-import asyncio
 import logging
 from pathlib import Path
 
@@ -118,7 +117,7 @@ async def stream_answers(pdf_text: str = "", images: list[str] | None = None, ap
         yield f"data: {json.dumps({'error': '請先在右上角 ⚙ 設定 API Key'})}\n\n"
         return
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = anthropic.AsyncAnthropic(api_key=api_key)
 
     if images:
         content: list = [
@@ -133,16 +132,15 @@ async def stream_answers(pdf_text: str = "", images: list[str] | None = None, ap
         content = f"以下是 PDF 考卷的內容，請幫我解答所有題目：\n\n{pdf_text}"
 
     try:
-        with client.messages.stream(
+        async with client.messages.stream(
             model="claude-sonnet-4-6",
             max_tokens=8192,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": content}],
         ) as stream:
-            for text in stream.text_stream:
+            async for text in stream.text_stream:
                 payload = json.dumps({"text": text}, ensure_ascii=False)
                 yield f"data: {payload}\n\n"
-                await asyncio.sleep(0)
         yield f"data: {json.dumps({'done': True})}\n\n"
 
     except anthropic.AuthenticationError:
@@ -159,7 +157,7 @@ async def stream_chat(context: str, follow_up: str, api_key: str = ""):
         yield f"data: {json.dumps({'error': '請先在右上角 ⚙ 設定 API Key'})}\n\n"
         return
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = anthropic.AsyncAnthropic(api_key=api_key)
 
     system_prompt = """你是一位耐心的老師，正在幫學生理解一道題目的解答。
 請根據提供的題目與解答，用清楚易懂的方式回應學生的問題。
@@ -168,16 +166,15 @@ async def stream_chat(context: str, follow_up: str, api_key: str = ""):
     user_message = f"題目與解答如下：\n\n{context}\n\n---\n\n學生追問：{follow_up}"
 
     try:
-        with client.messages.stream(
+        async with client.messages.stream(
             model="claude-sonnet-4-6",
             max_tokens=2048,
             system=system_prompt,
             messages=[{"role": "user", "content": user_message}],
         ) as stream:
-            for text in stream.text_stream:
+            async for text in stream.text_stream:
                 payload = json.dumps({"text": text}, ensure_ascii=False)
                 yield f"data: {payload}\n\n"
-                await asyncio.sleep(0)
         yield f"data: {json.dumps({'done': True})}\n\n"
 
     except anthropic.AuthenticationError:
