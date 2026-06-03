@@ -96,6 +96,58 @@ class SolveRequest(BaseModel):
     text: str
 
 
+class ChatRequest(BaseModel):
+    context: str   # the question block (header + answer) shown to the student
+    follow_up: str # student's question
+
+
+async def stream_chat(context: str, follow_up: str):
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        yield f"data: {json.dumps({'error': '請設定 ANTHROPIC_API_KEY 環境變數'})}\n\n"
+        return
+
+    client = anthropic.Anthropic(api_key=api_key)
+
+    system_prompt = """你是一位耐心的老師，正在幫學生理解一道題目的解答。
+請根據提供的題目與解答，用清楚易懂的方式回應學生的問題。
+使用繁體中文，說明要精簡有力，適時舉例輔助理解。"""
+
+    user_message = f"題目與解答如下：\n\n{context}\n\n---\n\n學生追問：{follow_up}"
+
+    try:
+        with client.messages.stream(
+            model="claude-sonnet-4-6",
+            max_tokens=2048,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_message}],
+        ) as stream:
+            for text in stream.text_stream:
+                payload = json.dumps({"text": text}, ensure_ascii=False)
+                yield f"data: {payload}\n\n"
+                await asyncio.sleep(0)
+
+        yield f"data: {json.dumps({'done': True})}\n\n"
+
+    except anthropic.AuthenticationError:
+        yield f"data: {json.dumps({'error': 'API 金鑰無效，請確認 ANTHROPIC_API_KEY'})}\n\n"
+    except anthropic.RateLimitError:
+        yield f"data: {json.dumps({'error': '已超過 API 使用限制，請稍後再試'})}\n\n"
+    except Exception as e:
+        yield f"data: {json.dumps({'error': f'發生錯誤：{str(e)}'})}\n\n"
+
+
+@app.post("/chat")
+async def chat(req: ChatRequest):
+    if not req.follow_up.strip():
+        raise HTTPException(status_code=400, detail="問題不可為空")
+    return StreamingResponse(
+        stream_chat(req.context, req.follow_up),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
 @app.post("/solve")
 async def solve(req: SolveRequest):
     if not req.text.strip():
