@@ -1,5 +1,4 @@
 import os
-import io
 import json
 import asyncio
 from pathlib import Path
@@ -15,24 +14,22 @@ load_dotenv()
 
 app = FastAPI(title="PDF Quiz Solver")
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
-
-def extract_text_from_pdf(pdf_bytes: bytes) -> str:
+def extract_text_from_pdf(pdf_bytes: bytes) -> tuple[str, int]:
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-    pages = []
-    for page in doc:
-        pages.append(page.get_text())
+    page_count = len(doc)
+    pages = [page.get_text() for page in doc]
     doc.close()
-    return "\n\n".join(pages)
+    return "\n\n".join(pages), page_count
 
 
 async def stream_answers(pdf_text: str):
-    if not ANTHROPIC_API_KEY:
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
         yield f"data: {json.dumps({'error': '請設定 ANTHROPIC_API_KEY 環境變數'})}\n\n"
         return
 
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    client = anthropic.Anthropic(api_key=api_key)
 
     system_prompt = """你是一位專業的解題老師。
 使用者會提供一份包含多道題目的考卷內容。請：
@@ -85,14 +82,14 @@ async def upload_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="檔案大小不能超過 20MB")
 
     try:
-        text = extract_text_from_pdf(content)
+        text, page_count = extract_text_from_pdf(content)
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"無法解析 PDF：{str(e)}")
 
     if not text.strip():
         raise HTTPException(status_code=422, detail="PDF 內容為空或無法提取文字（可能是掃描圖片 PDF）")
 
-    return {"text": text, "pages": text.count("\n\n") + 1}
+    return {"text": text, "pages": page_count}
 
 
 class SolveRequest(BaseModel):

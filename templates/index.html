@@ -201,12 +201,6 @@
     #answer-box::-webkit-scrollbar-track { background: transparent; }
     #answer-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    /* Highlight question headers */
-    .q-header {
-      color: var(--accent2);
-      font-weight: 700;
-    }
-
     /* Error */
     .error-msg {
       color: var(--error);
@@ -423,7 +417,6 @@
     setStatus('AI 正在分析題目並生成解答...');
 
     answerSection.style.display = 'block';
-    answerBox.innerHTML = '';
     answerBox.textContent = '';
     copyBtn.style.display = 'none';
     liveDot.classList.remove('done');
@@ -455,7 +448,8 @@
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
-          const payload = JSON.parse(line.slice(6));
+          let payload;
+          try { payload = JSON.parse(line.slice(6)); } catch { continue; }
 
           if (payload.error) {
             showError(payload.error);
