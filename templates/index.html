@@ -34,6 +34,9 @@
     header {
       text-align: center;
       margin-bottom: 2.5rem;
+      position: relative;
+      width: 100%;
+      max-width: 800px;
     }
 
     header h1 {
@@ -345,28 +348,178 @@
       display: none;
     }
 
-    /* Copy button */
-    #copy-btn {
+    /* Settings button in header */
+    #settings-btn {
+      position: absolute;
+      top: 0; right: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding: 0.4rem 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    #settings-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    .key-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--error);
+      flex-shrink: 0;
+    }
+    .key-dot.set { background: var(--success); }
+
+    /* Settings modal overlay */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .settings-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      width: min(420px, 90vw);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .modal-header h3 { font-size: 1rem; font-weight: 600; }
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .modal-close-btn:hover { color: var(--text); }
+
+    .modal-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .key-input-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .key-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.88rem;
+      padding: 0.55rem 0.85rem;
+      font-family: monospace;
+      transition: border-color 0.2s;
+    }
+    .key-input:focus { outline: none; border-color: var(--accent2); }
+
+    .modal-btn-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+
+    .btn-save {
+      flex: 1;
+      padding: 0.55rem;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-save:hover { opacity: 0.85; }
+
+    .btn-clear {
+      padding: 0.55rem 0.9rem;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-clear:hover { border-color: var(--error); color: var(--error); }
+
+    .modal-note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Action buttons (copy / export / print) */
+    .action-row {
       display: none;
+      gap: 0.5rem;
       margin-top: 1rem;
-      padding: 0.6rem 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .action-row button {
+      padding: 0.55rem 1rem;
       border: 1px solid var(--border);
       border-radius: 8px;
       background: var(--surface2);
       color: var(--text);
       font-size: 0.85rem;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s, border-color 0.2s;
     }
-
-    #copy-btn:hover { background: var(--border); }
-    #copy-btn.copied { color: var(--success); border-color: var(--success); }
+    .action-row button:hover { background: var(--border); }
+    .action-row button.copied { color: var(--success); border-color: var(--success); }
 
     footer {
       margin-top: 3rem;
       color: var(--muted);
       font-size: 0.78rem;
       text-align: center;
+    }
+
+    /* ── Print styles ── */
+    @media print {
+      body { background: #fff; color: #000; padding: 0; }
+      header, .card, #answer-section > h2, footer,
+      .qb-followup-wrap, .action-row { display: none !important; }
+      #answer-section {
+        display: block !important;
+        width: 100%;
+        max-width: 100%;
+      }
+      #answer-box {
+        max-height: none;
+        overflow: visible;
+        border: none;
+        padding: 0;
+        background: transparent;
+      }
+      .q-block {
+        background: transparent;
+        border: 1px solid #ccc;
+        break-inside: avoid;
+        margin-bottom: 1rem;
+      }
+      .qb-header { color: #4b0082; }
     }
   </style>
 </head>
@@ -375,7 +528,34 @@
 <header>
   <h1>PDF 智慧解題工具</h1>
   <p>上傳含有題目的 PDF，AI 即時為您解答每一道題</p>
+  <button id="settings-btn" title="API Key 設定">
+    <span id="key-dot" class="key-dot"></span>
+    ⚙ 設定
+  </button>
 </header>
+
+<!-- Settings modal -->
+<div id="settings-overlay" class="overlay" style="display:none">
+  <div class="settings-modal">
+    <div class="modal-header">
+      <h3>⚙ API Key 設定</h3>
+      <button class="modal-close-btn" id="modal-close">✕</button>
+    </div>
+    <p class="modal-label">Anthropic API Key</p>
+    <div class="key-input-row">
+      <input type="password" id="api-key-input" class="key-input"
+             placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="modal-btn-row">
+      <button class="btn-save" id="save-key-btn">儲存</button>
+      <button class="btn-clear" id="clear-key-btn">清除</button>
+    </div>
+    <p class="modal-note">
+      金鑰僅存於此瀏覽器的 localStorage，每次請求以 Header 傳送至本地伺服器，不會傳到其他地方。<br>
+      若伺服器已設定 <code>ANTHROPIC_API_KEY</code> 環境變數，此欄可留空。
+    </p>
+  </div>
+</div>
 
 <div class="card">
   <div id="drop-zone" role="button" tabindex="0" aria-label="點擊或拖曳上傳 PDF">
@@ -415,7 +595,11 @@
     AI 解題結果
   </h2>
   <div id="answer-box"></div>
-  <button id="copy-btn">複製全部解答</button>
+  <div class="action-row" id="action-row">
+    <button id="copy-btn">複製</button>
+    <button id="export-md-btn">⬇ 下載 Markdown</button>
+    <button id="print-btn">🖨 列印 / 存 PDF</button>
+  </div>
 </div>
 
 <footer>Powered by Claude AI &amp; FastAPI</footer>
@@ -430,12 +614,61 @@
   const errorMsg = document.getElementById('error-msg');
   const progressWrap = document.getElementById('progress-bar-wrap');
   const progressBar = document.getElementById('progress-bar');
-  const statusEl = document.getElementById('status');
+  const statusEl    = document.getElementById('status');
   const answerSection = document.getElementById('answer-section');
-  const answerBox = document.getElementById('answer-box');
-  const copyBtn = document.getElementById('copy-btn');
-  const liveDot = document.getElementById('live-dot');
+  const answerBox   = document.getElementById('answer-box');
+  const actionRow   = document.getElementById('action-row');
+  const copyBtn     = document.getElementById('copy-btn');
+  const exportMdBtn = document.getElementById('export-md-btn');
+  const printBtn    = document.getElementById('print-btn');
+  const liveDot     = document.getElementById('live-dot');
 
+  // ── API Key state ─────────────────────────────────────────────
+  let apiKey = localStorage.getItem('anthropic_api_key') || '';
+
+  function updateKeyDot() {
+    const dot = document.getElementById('key-dot');
+    dot.className = 'key-dot' + (apiKey ? ' set' : '');
+    document.getElementById('settings-btn').title =
+      apiKey ? 'API Key 已設定 ✓' : 'API Key 未設定';
+  }
+  updateKeyDot();
+
+  function apiHeaders() {
+    return { 'Content-Type': 'application/json', 'X-API-Key': apiKey };
+  }
+
+  // Settings modal
+  const overlay   = document.getElementById('settings-overlay');
+  const keyInput  = document.getElementById('api-key-input');
+
+  document.getElementById('settings-btn').addEventListener('click', () => {
+    keyInput.value = apiKey;
+    overlay.style.display = 'flex';
+    setTimeout(() => keyInput.focus(), 50);
+  });
+
+  function closeModal() { overlay.style.display = 'none'; }
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+  document.getElementById('save-key-btn').addEventListener('click', () => {
+    apiKey = keyInput.value.trim();
+    localStorage.setItem('anthropic_api_key', apiKey);
+    updateKeyDot();
+    closeModal();
+  });
+
+  document.getElementById('clear-key-btn').addEventListener('click', () => {
+    apiKey = '';
+    localStorage.removeItem('anthropic_api_key');
+    keyInput.value = '';
+    updateKeyDot();
+  });
+
+  keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('save-key-btn').click(); });
+
+  // ── App state ─────────────────────────────────────────────────
   let selectedFile = null;
   let extractedText = '';
   let extractedImages = [];
@@ -568,7 +801,7 @@
     try {
       const res = await fetch('/solve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: apiHeaders(),
         body: JSON.stringify({ text, images }),
         signal: abortController.signal,
       });
@@ -630,22 +863,34 @@
 
     if (!isError && answerBox.textContent.trim()) {
       renderBlocks(answerBox.textContent);
-      copyBtn.style.display = 'inline-block';
+      actionRow.style.display = 'flex';
     }
   }
 
-  // Copy button — reads textContent from all rendered blocks
+  // ── Export / print actions ────────────────────────────────────
+
   copyBtn.addEventListener('click', () => {
-    const text = answerBox.textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      copyBtn.textContent = '已複製!';
+    navigator.clipboard.writeText(answerBox.textContent).then(() => {
+      copyBtn.textContent = '已複製 ✓';
       copyBtn.classList.add('copied');
-      setTimeout(() => {
-        copyBtn.textContent = '複製全部解答';
-        copyBtn.classList.remove('copied');
-      }, 2000);
+      setTimeout(() => { copyBtn.textContent = '複製'; copyBtn.classList.remove('copied'); }, 2000);
     });
   });
+
+  exportMdBtn.addEventListener('click', () => {
+    const md = answerBox.textContent;
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'quiz-answers.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  printBtn.addEventListener('click', () => window.print());
 
   // ── Helpers ──────────────────────────────────────────────────
 
@@ -751,7 +996,7 @@
     try {
       const res = await fetch('/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: apiHeaders(),
         body: JSON.stringify({ context, follow_up: question }),
       });
 
