@@ -551,7 +551,7 @@
       <button class="btn-clear" id="clear-key-btn">清除</button>
     </div>
     <p class="modal-note">
-      金鑰僅存於此瀏覽器的 localStorage，每次請求以 Header 傳送至本地伺服器，不會傳到其他地方。<br>
+      金鑰僅存於此瀏覽器的 sessionStorage（關閉分頁即清除），每次請求以 Header 傳送至本地伺服器，不會傳到其他地方。<br>
       若伺服器已設定 <code>ANTHROPIC_API_KEY</code> 環境變數，此欄可留空。
     </p>
   </div>
@@ -624,7 +624,7 @@
   const liveDot     = document.getElementById('live-dot');
 
   // ── API Key state ─────────────────────────────────────────────
-  let apiKey = localStorage.getItem('anthropic_api_key') || '';
+  let apiKey = sessionStorage.getItem('anthropic_api_key') || '';
 
   function updateKeyDot() {
     const dot = document.getElementById('key-dot');
@@ -643,7 +643,8 @@
   const keyInput  = document.getElementById('api-key-input');
 
   document.getElementById('settings-btn').addEventListener('click', () => {
-    keyInput.value = apiKey;
+    keyInput.value = '';   // never repopulate — mask instead
+    keyInput.placeholder = apiKey ? `已設定（…${apiKey.slice(-4)}）` : 'sk-ant-api03-…';
     overlay.style.display = 'flex';
     setTimeout(() => keyInput.focus(), 50);
   });
@@ -653,15 +654,18 @@
   overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
 
   document.getElementById('save-key-btn').addEventListener('click', () => {
-    apiKey = keyInput.value.trim();
-    localStorage.setItem('anthropic_api_key', apiKey);
+    const newKey = keyInput.value.trim();
+    if (newKey) {   // only overwrite if user typed a new key
+      apiKey = newKey;
+      sessionStorage.setItem('anthropic_api_key', apiKey);
+    }
     updateKeyDot();
     closeModal();
   });
 
   document.getElementById('clear-key-btn').addEventListener('click', () => {
     apiKey = '';
-    localStorage.removeItem('anthropic_api_key');
+    sessionStorage.removeItem('anthropic_api_key');
     keyInput.value = '';
     updateKeyDot();
   });
@@ -895,7 +899,12 @@
   // ── Helpers ──────────────────────────────────────────────────
 
   function escHtml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   // ── Block rendering ──────────────────────────────────────────
