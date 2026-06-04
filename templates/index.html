@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StudyElf</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -53,9 +54,37 @@
 
     header p { color: var(--muted); margin-top: 0.3rem; font-size: 0.88rem; }
 
-    #settings-btn {
+    .header-actions {
       position: absolute;
       top: 1.75rem; right: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sync-badge {
+      display: none;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: var(--surface);
+      cursor: default;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .sync-badge.synced { border-color: var(--success); color: var(--success); background: #f0fdf4; }
+    .sync-badge.unauth { border-color: var(--warn); color: var(--warn); background: #fefce8; }
+    .sync-badge.syncing { border-color: var(--accent); color: var(--accent); }
+
+    .modal-divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+    .modal-section-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.6rem; }
+    .modal-auth-msg { font-size: 0.8rem; margin-top: 0.4rem; min-height: 1.2em; }
+    .modal-auth-msg.ok  { color: var(--success); }
+    .modal-auth-msg.err { color: var(--error); }
+
+    #settings-btn {
       display: flex;
       align-items: center;
       gap: 0.4rem;
@@ -423,7 +452,8 @@
     }
     .settings-modal {
       background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-      padding: 1.75rem; width: min(420px, 90vw);
+      padding: 1.75rem; width: min(440px, 90vw);
+      max-height: 88vh; overflow-y: auto;
     }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
     .modal-header h3 { font-size: 1rem; font-weight: 600; }
@@ -474,9 +504,12 @@
 <header>
   <h1>StudyElf ✦</h1>
   <p>上傳含有題目的 PDF，AI 即時為您解答每一道題</p>
-  <button id="settings-btn" title="API Key 設定">
-    <span id="key-dot" class="key-dot"></span>⚙ 設定
-  </button>
+  <div class="header-actions">
+    <span id="sync-badge" class="sync-badge"></span>
+    <button id="settings-btn" title="API Key 設定">
+      <span id="key-dot" class="key-dot"></span>⚙ 設定
+    </button>
+  </div>
 </header>
 
 <!-- Tab nav -->
@@ -489,10 +522,13 @@
 <div id="settings-overlay" class="overlay" style="display:none">
   <div class="settings-modal">
     <div class="modal-header">
-      <h3>⚙ API Key 設定</h3>
+      <h3>⚙ 設定</h3>
       <button class="modal-close-btn" id="modal-close">✕</button>
     </div>
-    <p class="modal-label">Anthropic API Key</p>
+
+    <!-- API Key section -->
+    <p class="modal-section-title">Anthropic API Key</p>
+    <p class="modal-label">API Key</p>
     <div class="key-input-row">
       <input type="password" id="api-key-input" class="key-input" placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false" />
     </div>
@@ -501,9 +537,55 @@
       <button class="btn-clear" id="clear-key-btn">清除</button>
     </div>
     <p class="modal-note">
-      金鑰僅存於此瀏覽器的 sessionStorage（關閉分頁即清除），每次請求以 Header 傳送，不會傳到其他地方。<br>
+      金鑰存於 sessionStorage（關閉分頁即清除），不會傳到其他地方。<br>
       若伺服器已設定 <code>ANTHROPIC_API_KEY</code> 環境變數，此欄可留空。
     </p>
+
+    <hr class="modal-divider">
+
+    <!-- Cloud Sync section -->
+    <p class="modal-section-title">☁ 雲端同步（選用）</p>
+    <p class="modal-label">Supabase Project URL</p>
+    <div class="key-input-row">
+      <input type="text" id="sb-url-input" class="key-input" placeholder="https://xxxx.supabase.co" autocomplete="off" spellcheck="false" />
+    </div>
+    <p class="modal-label" style="margin-top:0.5rem">Supabase Anon Key</p>
+    <div class="key-input-row">
+      <input type="text" id="sb-key-input" class="key-input" placeholder="eyJhbGci…" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="modal-btn-row">
+      <button class="btn-save" id="save-sb-btn">儲存同步設定</button>
+    </div>
+    <p class="modal-note" style="margin-bottom:0.75rem">
+      免費建立 Supabase 專案後，在 Settings → API 取得 URL 及 Anon Key。<br>
+      設定好後登入帳號即可讓題庫跨裝置同步。
+    </p>
+
+    <!-- Auth: shown only when Supabase is configured -->
+    <div id="sb-auth-section" style="display:none">
+      <div id="sb-logged-out">
+        <p class="modal-label">帳號登入 / 註冊</p>
+        <div class="key-input-row">
+          <input type="email" id="sb-email" class="key-input" placeholder="your@email.com" autocomplete="email" />
+        </div>
+        <div class="key-input-row" style="margin-top:0.4rem">
+          <input type="password" id="sb-password" class="key-input" placeholder="密碼（至少 6 字元）" autocomplete="current-password" />
+        </div>
+        <div class="modal-btn-row" style="margin-top:0.5rem">
+          <button class="btn-save" id="sb-login-btn">登入</button>
+          <button class="btn-clear" id="sb-register-btn">註冊</button>
+        </div>
+        <p id="sb-auth-msg" class="modal-auth-msg"></p>
+      </div>
+      <div id="sb-logged-in" style="display:none">
+        <p class="modal-note">✅ 已登入：<strong><span id="sb-user-email"></span></strong></p>
+        <div class="modal-btn-row" style="margin-top:0.5rem">
+          <button class="btn-save" id="sb-sync-btn">立即同步</button>
+          <button class="btn-clear" id="sb-logout-btn">登出</button>
+        </div>
+        <p id="sb-sync-status" class="modal-auth-msg"></p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -631,6 +713,7 @@
     }
     saveBank(bank);
     updatePracticeCount();
+    sbUpsert(newQuestions);
   }
 
   function setQuestionStatus(id, status) {
@@ -638,11 +721,13 @@
     const q = bank.find(x => x.id === id);
     if (q) { q.status = status; saveBank(bank); }
     updatePracticeCount();
+    sbUpdateStatus(id, status);
   }
 
   function deleteQuestion(id) {
     saveBank(loadBank().filter(x => x.id !== id));
     updatePracticeCount();
+    sbDeleteQuestion(id);
   }
 
   function makeId(source, index) {
@@ -1076,6 +1161,211 @@
 
     return div;
   }
+
+  // ── Supabase cloud sync ───────────────────────────────────────────
+  let sbUrl  = localStorage.getItem('sb_url')  || '';
+  let sbKey  = localStorage.getItem('sb_anon') || '';
+  let sb     = null;
+  let sbUser = null;
+  const TOMBSTONE_KEY = 'studyelf_tombstones';
+
+  function getTombstones() { try { return JSON.parse(localStorage.getItem(TOMBSTONE_KEY) || '[]'); } catch { return []; } }
+  function addTombstone(id) { const t = getTombstones(); if (!t.includes(id)) { t.push(id); localStorage.setItem(TOMBSTONE_KEY, JSON.stringify(t)); } }
+  function clearTombstones() { localStorage.removeItem(TOMBSTONE_KEY); }
+
+  function updateSyncBadge(state, label) {
+    const badge = document.getElementById('sync-badge');
+    if (!badge) return;
+    badge.style.display = (state === 'hidden') ? 'none' : 'inline-block';
+    badge.className = 'sync-badge' + (state && state !== 'hidden' ? ' ' + state : '');
+    if (label !== undefined) badge.textContent = label;
+  }
+
+  function updateSyncUI() {
+    const sbAuth    = document.getElementById('sb-auth-section');
+    const loggedOut = document.getElementById('sb-logged-out');
+    const loggedIn  = document.getElementById('sb-logged-in');
+    const emailSpan = document.getElementById('sb-user-email');
+    if (!sbAuth) return;
+    if (sbUrl && sbKey && sb) {
+      sbAuth.style.display = 'block';
+      if (sbUser) {
+        loggedOut.style.display = 'none';
+        loggedIn.style.display  = 'block';
+        if (emailSpan) emailSpan.textContent = sbUser.email;
+        updateSyncBadge('synced', '☁ 已連線');
+      } else {
+        loggedOut.style.display = 'block';
+        loggedIn.style.display  = 'none';
+        updateSyncBadge('unauth', '☁ 未登入');
+      }
+    } else {
+      sbAuth.style.display = 'none';
+      updateSyncBadge('hidden');
+    }
+  }
+
+  async function initSupabase(url, key) {
+    sb = null; sbUser = null;
+    if (!url || !key) { updateSyncUI(); return; }
+    if (typeof supabase === 'undefined') { console.warn('Supabase JS not loaded'); return; }
+    try {
+      sb = supabase.createClient(url, key);
+      sb.auth.onAuthStateChange(async (event, session) => {
+        sbUser = session?.user || null;
+        updateSyncUI();
+        if (event === 'SIGNED_IN') await fullSync();
+      });
+      const { data: { session } } = await sb.auth.getSession();
+      sbUser = session?.user || null;
+      updateSyncUI();
+      if (sbUser) await fullSync();
+    } catch (e) {
+      console.error('Supabase init error:', e);
+      sb = null; updateSyncUI();
+    }
+  }
+
+  async function fullSync() {
+    if (!sb || !sbUser) return;
+    updateSyncBadge('syncing', '☁ 同步中…');
+    const statusEl = document.getElementById('sb-sync-status');
+    if (statusEl) { statusEl.textContent = '正在同步...'; statusEl.className = 'modal-auth-msg'; }
+    try {
+      // 1. Apply tombstones (offline deletes)
+      const tombstones = getTombstones();
+      for (const id of tombstones) {
+        await sb.from('questions').delete().eq('id', id).eq('user_id', sbUser.id);
+      }
+      if (tombstones.length) clearTombstones();
+
+      // 2. Push all local questions — local status always wins
+      const local = loadBank();
+      if (local.length) {
+        const rows = local.map(q => ({
+          id: q.id, user_id: sbUser.id,
+          source: q.source || '', header: q.header || '', content: q.content || '',
+          status: q.status || 'unseen',
+          saved_at: new Date(q.savedAt || Date.now()).toISOString()
+        }));
+        const { error } = await sb.from('questions').upsert(rows, { onConflict: 'id,user_id' });
+        if (error) throw error;
+      }
+
+      // 3. Pull remote, add any questions missing from local
+      const { data, error: fetchErr } = await sb.from('questions')
+        .select('*').order('saved_at', { ascending: false });
+      if (fetchErr) throw fetchErr;
+      if (data && data.length) {
+        const bank = loadBank();
+        let added = 0;
+        for (const r of data) {
+          if (!bank.find(x => x.id === r.id)) {
+            bank.unshift({ id: r.id, source: r.source, header: r.header, content: r.content, status: r.status, savedAt: new Date(r.saved_at).getTime() });
+            added++;
+          }
+        }
+        if (added) { saveBank(bank); updatePracticeCount(); }
+        if (added && document.querySelector('.tab-btn.active')?.dataset.tab === 'practice') renderPracticeView();
+      }
+
+      const now = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+      updateSyncBadge('synced', '☁ 已連線');
+      if (statusEl) { statusEl.textContent = `✅ 上次同步：${now}`; statusEl.className = 'modal-auth-msg ok'; }
+    } catch (e) {
+      console.error('Sync error:', e);
+      updateSyncBadge('synced', '☁ 已連線');
+      if (statusEl) { statusEl.textContent = `❌ 同步失敗：${e.message?.slice(0, 80) || '未知'}`; statusEl.className = 'modal-auth-msg err'; }
+    }
+  }
+
+  function sbUpsert(questions) {
+    if (!sb || !sbUser) return;
+    const rows = questions.map(q => ({
+      id: q.id, user_id: sbUser.id,
+      source: q.source || '', header: q.header || '', content: q.content || '',
+      status: q.status || 'unseen',
+      saved_at: new Date(q.savedAt || Date.now()).toISOString()
+    }));
+    sb.from('questions').upsert(rows, { onConflict: 'id,user_id' }).then(({ error }) => {
+      if (error) console.error('sbUpsert error:', error);
+    });
+  }
+
+  function sbUpdateStatus(id, status) {
+    if (!sb || !sbUser) return;
+    sb.from('questions').update({ status }).eq('id', id).eq('user_id', sbUser.id).then(({ error }) => {
+      if (error) console.error('sbUpdateStatus error:', error);
+    });
+  }
+
+  function sbDeleteQuestion(id) {
+    if (!sb || !sbUser) { addTombstone(id); return; }
+    sb.from('questions').delete().eq('id', id).eq('user_id', sbUser.id).then(({ error }) => {
+      if (error) { addTombstone(id); console.error('sbDelete error:', error); }
+    });
+  }
+
+  // ── Supabase UI event handlers ────────────────────────────────────
+  (function wireSupabase() {
+    const sbUrlInput  = document.getElementById('sb-url-input');
+    const sbKeyInput  = document.getElementById('sb-key-input');
+    const saveSbBtn   = document.getElementById('save-sb-btn');
+    const emailInput  = document.getElementById('sb-email');
+    const passInput   = document.getElementById('sb-password');
+    const loginBtn    = document.getElementById('sb-login-btn');
+    const registerBtn = document.getElementById('sb-register-btn');
+    const logoutBtn   = document.getElementById('sb-logout-btn');
+    const syncNowBtn  = document.getElementById('sb-sync-btn');
+    const authMsg     = document.getElementById('sb-auth-msg');
+
+    sbUrlInput.value = sbUrl;
+    sbKeyInput.value = sbKey;
+
+    function setAuthMsg(msg, cls) {
+      authMsg.textContent = msg;
+      authMsg.className = 'modal-auth-msg' + (cls ? ' ' + cls : '');
+    }
+
+    saveSbBtn.addEventListener('click', async () => {
+      sbUrl = sbUrlInput.value.trim().replace(/\/$/, '');
+      sbKey = sbKeyInput.value.trim();
+      localStorage.setItem('sb_url', sbUrl);
+      localStorage.setItem('sb_anon', sbKey);
+      await initSupabase(sbUrl, sbKey);
+    });
+
+    loginBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim(), pass = passInput.value;
+      if (!email || !pass) { setAuthMsg('請填寫 email 和密碼', 'err'); return; }
+      setAuthMsg('登入中...');
+      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+      if (error) setAuthMsg('❌ ' + error.message, 'err');
+      else { setAuthMsg(''); passInput.value = ''; }
+    });
+
+    registerBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim(), pass = passInput.value;
+      if (!email || !pass) { setAuthMsg('請填寫 email 和密碼', 'err'); return; }
+      if (pass.length < 6) { setAuthMsg('密碼至少需要 6 個字元', 'err'); return; }
+      setAuthMsg('註冊中...');
+      const { error } = await sb.auth.signUp({ email, password: pass });
+      if (error) setAuthMsg('❌ ' + error.message, 'err');
+      else { setAuthMsg('✅ 已發送確認信，請查看信箱後再登入', 'ok'); passInput.value = ''; }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      await sb.auth.signOut();
+      sbUser = null; updateSyncUI();
+    });
+
+    syncNowBtn.addEventListener('click', () => fullSync());
+  })();
+
+  window.addEventListener('online', () => { if (sb && sbUser) fullSync(); });
+
+  if (sbUrl && sbKey) initSupabase(sbUrl, sbKey);
+  else updateSyncUI();
 
   // ── Follow-up streaming ────────────────────────────────────────
   async function sendFollowup(context, question, historyEl, blockDiv) {
